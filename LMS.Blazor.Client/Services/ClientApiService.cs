@@ -15,7 +15,7 @@ public class ClientApiService(IHttpClientFactory httpClientFactory, NavigationMa
         await authReady.WaitAsync();
 
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"proxy?endpoint={endpoint}");
-        var response = await httpClient.SendAsync(requestMessage);
+        var response = await httpClient.SendAsync(requestMessage, ct);
 
         if (response.StatusCode == System.Net.HttpStatusCode.Forbidden
            || response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
