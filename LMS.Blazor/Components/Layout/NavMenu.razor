@@ -1,62 +1,91 @@
 @implements IDisposable
 @inject NavigationManager NavigationManager
-<div class="top-row ps-3 navbar navbar-dark"> 
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">LMS</a>
+        <a class="navbar-brand d-flex align-items-center" href="">
+            <span class="bi bi-mortarboard text-white fs-4 me-3" style="line-height: 1;"></span>
+            <span class="fs-5 text-white fw-bold">LexiTech</span>
+        </a>
     </div>
 </div>
-
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
-        <div class="nav-item px-2">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
         <AuthorizeView>
-             <NotAuthorized>
+            <NotAuthorized>
+                <!-- Home -->
+                <div class="nav-item px-2">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                    </NavLink>
+                </div>
+
+                <!-- Register  
                 <div class="nav-item px-2">
                     <NavLink class="nav-link" href="Account/Register">
                         <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
                     </NavLink>
-                </div>
+                </div> -->
+
+                <!-- Login -->
                 <div class="nav-item px-2">
                     <NavLink class="nav-link" href="account/login" Match="NavLinkMatch.All">
-                        <span class="i bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Login
                     </NavLink>
                 </div>
             </NotAuthorized>
-            <Authorized> 
+
+            <Authorized>
+                <!-- Overview student (remplace Home) -->
+                <div class="nav-item px-2">
+                    <NavLink class="nav-link" href="/student/overview" Match="NavLinkMatch.All">
+                        <span class="bi bi-grid-nav-menu" aria-hidden="true"></span> Overview
+                    </NavLink>
+                </div>
+
+                <!-- My course -->
+                <div class="nav-item px-2">
+                    <NavLink class="nav-link" href="/student/course">
+                        <span class="bi bi-book-nav-menu" aria-hidden="true"></span> My Course
+                    </NavLink> <!-- to do : remplace @course.Name  -->
+                </div>
+
+                <!-- DemoAuth 
                 <div class="nav-item px-2">
                     <NavLink class="nav-link" href="demoauth">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> DemoAuth 
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> DemoAuth
                     </NavLink>
-                </div>
-                <div class="nav-item px-2">
-                    <NavLink class="nav-link" href="demoauth2">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Load data OnInitialized 
-                    </NavLink>
-                </div>
-                <div class="nav-item px-2">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                    <div class="nav-item px-2">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout 
-                        </button>
-                    </form>
-                </div>
-          </Authorized>
+                </div> -->
+            </Authorized>
         </AuthorizeView>
+
+        <!-- bottom section- profil et logout -->
+        <div class="nav-bottom">
+            <AuthorizeView>
+                <Authorized>
+
+                    <div class="nav-item px-2">
+                        <NavLink class="nav-link" href="Account/Manage">
+                            <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-2">
+                        <form action="Account/Logout" method="post">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                            <button type="submit" class="nav-link text-danger">
+                                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                            </button>
+                        </form>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </div>
     </nav>
 </div>
+
+
 
 @code {
     private string? currentUrl;
@@ -65,16 +94,17 @@
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
     }
-
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
-
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
-
 }
+
+
+
+
