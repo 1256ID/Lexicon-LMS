@@ -180,4 +180,37 @@ h1:focus {
         border-radius: 8px;
         color: #222;
     }
+
+
+    /* Login page specific styles */
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+
+    /* Form floating labels enhancement */
+    .form-floating > label {
+        color: #6c757d;
+    }
+
+    .form-floating > .form-control:focus ~ label {
+        color: #1b6ec2;
+    }
+
+    /* Links styling for login */
+    a.text-decoration-none:hover {
+        color: #1b6ec2 !important;
+        text-decoration: underline !important;
+    }
+
+    /* Card shadow enhancement */
+    .shadow-lg {
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+    }
+
+    /* Responsive adjustments for login */
+    @media (max-width: 768px) {
+        .card {
+            margin: 1rem;
+        }
+    }
 }

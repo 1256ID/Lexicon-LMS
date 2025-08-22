@@ -17,40 +17,75 @@
 
 <PageTitle>Register</PageTitle>
 
-<h1>Register</h1>
+<div class="container-fluid">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <!-- Main Register Card -->
+        <div class="col-lg-5 col-md-7 col-sm-10">
+            <div class="card shadow-lg" style="border-radius: 1rem;">
+                <!-- Card Header -->
+                <div class="card-header text-center py-4" style="background-color: #1b6ec2; color: white; border-radius: 1rem 1rem 0 0;">
+                    <h2 class="mb-0 fw-bold">Create Account</h2>
+                    <p class="mb-0 mt-2">Join our learning platform</p>
+                </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <StatusMessage Message="@Message" />
-        <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator />
-            <h2>Create a new account.</h2>
-            <hr />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label for="email">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
+                <!-- Card Body -->
+                <div class="card-body p-4">
+                    <StatusMessage Message="@Message" />
+
+                    <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger mb-3" role="alert" />
+
+                        <!-- Email Field -->
+                        <div class="form-floating mb-3">
+                            <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                            <label for="email" class="form-label">Email Address</label>
+                            <ValidationMessage For="() => Input.Email" class="text-danger" />
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="form-floating mb-3">
+                            <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                            <label for="password" class="form-label">Password</label>
+                            <ValidationMessage For="() => Input.Password" class="text-danger" />
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="form-floating mb-4">
+                            <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                            <label for="confirm-password" class="form-label">Confirm Password</label>
+                            <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                        </div>
+
+                        <!-- Register Button -->
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 0.5rem;">
+                                Create Account
+                            </button>
+                        </div>
+
+                        <!-- Link to Login -->
+                        <div class="text-center">
+                            <div class="mb-2">
+                                <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))"
+                                   class="text-decoration-none">Already have an account? Sign in here</a>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="password">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger" />
+        </div>
+
+       @*  <!-- External Registration Section -->
+        <div class="col-lg-4 col-md-5 col-sm-10 mt-4 mt-lg-0">
+            <div class="card shadow-sm h-100" style="border-radius: 1rem;">
+                <div class="card-body p-4 text-center">
+                    <h4 class="card-title mb-4" style="color: #1b6ec2;">Alternative Registration</h4>
+                    <hr class="mb-4" />
+                    <ExternalLoginPicker />
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="confirm-password">Confirm Password</label>
-                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
+        </div> *@
     </div>
 </div>
 
