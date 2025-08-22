@@ -70,8 +70,8 @@
                                 <a href="Account/ForgotPassword" class="text-decoration-none">Forgot your password?</a>
                             </div>
                             <div class="mb-2">
-                                <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))" 
-                                   class="text-decoration-none">Don't have an account? Register here</a>
+                                <a href="@(NavigationManager.GetUriWithQueryParameters("Account/RegisterTeacher", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))" 
+                                   class="text-decoration-none">Don't have an account? Register as Teacher</a>
                             </div>
                             <div>
                                 <a href="Account/ResendEmailConfirmation" class="text-decoration-none small">Resend email confirmation</a>

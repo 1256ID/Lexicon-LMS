@@ -1,4 +1,4 @@
-﻿@page "/Account/Register"
+﻿@page "/Account/RegisterTeacher"
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -11,81 +11,59 @@
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IEmailSender<ApplicationUser> EmailSender
-@inject ILogger<Register> Logger
+@inject ILogger<RegisterTeacher> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Register Teacher</PageTitle>
 
 <div class="container-fluid">
     <div class="row justify-content-center min-vh-100 align-items-center">
-        <!-- Main Register Card -->
         <div class="col-lg-5 col-md-7 col-sm-10">
             <div class="card shadow-lg" style="border-radius: 1rem;">
-                <!-- Card Header -->
                 <div class="card-header text-center py-4" style="background-color: #1b6ec2; color: white; border-radius: 1rem 1rem 0 0;">
-                    <h2 class="mb-0 fw-bold">Create Account</h2>
+                    <h2 class="mb-0 fw-bold">Register as Teacher</h2>
                     <p class="mb-0 mt-2">Join our learning platform</p>
                 </div>
 
-                <!-- Card Body -->
                 <div class="card-body p-4">
                     <StatusMessage Message="@Message" />
 
-                    <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                    <EditForm Model="Input" OnValidSubmit="RegisterUser">
                         <DataAnnotationsValidator />
                         <ValidationSummary class="text-danger mb-3" role="alert" />
 
-                        <!-- Email Field -->
                         <div class="form-floating mb-3">
-                            <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                            <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
                             <label for="email" class="form-label">Email Address</label>
                             <ValidationMessage For="() => Input.Email" class="text-danger" />
                         </div>
 
-                        <!-- Password Field -->
                         <div class="form-floating mb-3">
-                            <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                            <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" placeholder="password" />
                             <label for="password" class="form-label">Password</label>
                             <ValidationMessage For="() => Input.Password" class="text-danger" />
                         </div>
 
-                        <!-- Confirm Password Field -->
                         <div class="form-floating mb-4">
-                            <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                            <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="password" />
                             <label for="confirm-password" class="form-label">Confirm Password</label>
                             <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
                         </div>
 
-                        <!-- Register Button -->
                         <div class="d-grid mb-4">
                             <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 0.5rem;">
-                                Create Account
+                                Create Teacher Account
                             </button>
                         </div>
 
-                        <!-- Link to Login -->
                         <div class="text-center">
-                            <div class="mb-2">
-                                <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))"
-                                   class="text-decoration-none">Already have an account? Sign in here</a>
-                            </div>
+                            <a href="/Account/Login" class="text-decoration-none">Already have an account? Sign in here</a>
                         </div>
                     </EditForm>
                 </div>
             </div>
         </div>
-
-       @*  <!-- External Registration Section -->
-        <div class="col-lg-4 col-md-5 col-sm-10 mt-4 mt-lg-0">
-            <div class="card shadow-sm h-100" style="border-radius: 1rem;">
-                <div class="card-body p-4 text-center">
-                    <h4 class="card-title mb-4" style="color: #1b6ec2;">Alternative Registration</h4>
-                    <hr class="mb-4" />
-                    <ExternalLoginPicker />
-                </div>
-            </div>
-        </div> *@
     </div>
 </div>
 
@@ -95,13 +73,9 @@
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
-
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
 
-    //Use API to add users!!!!
-    public async Task RegisterUser(EditContext editContext)
+    public async Task RegisterUser()
     {
         var user = CreateUser();
 
@@ -116,26 +90,21 @@
             return;
         }
 
-        Logger.LogInformation("User created a new account with password.");
+        // Add user to Teacher role
+        await UserManager.AddToRoleAsync(user, "Teacher");
+
+        Logger.LogInformation("Teacher account created with password.");
 
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
 
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-        if (UserManager.Options.SignIn.RequireConfirmedAccount)
-        {
-            RedirectManager.RedirectTo(
-                "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
-        }
-
-        //await SignInManager.SignInAsync(user, isPersistent: false);
-        RedirectManager.RedirectTo(ReturnUrl);
+        RedirectManager.RedirectTo("/Account/Login");
     }
 
     private ApplicationUser CreateUser()
@@ -143,20 +112,16 @@
         try
         {
             return Activator.CreateInstance<ApplicationUser>();
-        }
-        catch
+        } catch
         {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. Ensure it has a parameterless constructor.");
         }
     }
 
     private IUserEmailStore<ApplicationUser> GetEmailStore()
     {
         if (!UserManager.SupportsUserEmail)
-        {
-            throw new NotSupportedException("The default UI requires a user store with email support.");
-        }
+            throw new NotSupportedException("The user store must support email.");
         return (IUserEmailStore<ApplicationUser>)UserStore;
     }
 
@@ -164,18 +129,15 @@
     {
         [Required]
         [EmailAddress]
-        [Display(Name = "Email")]
         public string Email { get; set; } = "";
 
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [StringLength(100, MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
         public string Password { get; set; } = "";
 
         [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [Compare("Password", ErrorMessage = "The password and confirmation do not match.")]
         public string ConfirmPassword { get; set; } = "";
     }
 }
