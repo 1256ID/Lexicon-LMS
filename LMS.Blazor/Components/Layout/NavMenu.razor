@@ -1,62 +1,91 @@
 @implements IDisposable
 @inject NavigationManager NavigationManager
-<div class="top-row ps-3 navbar navbar-dark"> 
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">LMS</a>
+        <a class="navbar-brand d-flex align-items-center" href="">
+            <span class="bi bi-mortarboard text-white fs-4 me-3" style="line-height: 1;"></span>
+            <span class="fs-5 text-white fw-bold">LexiTech</span>
+        </a>
     </div>
 </div>
-
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
-        <div class="nav-item px-2">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
         <AuthorizeView>
-             <NotAuthorized>
+            <NotAuthorized>
+                <!-- Home before login -->
+                <div class="nav-item px-2">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                    </NavLink>
+                </div>
+
+                <!-- Register  
                 <div class="nav-item px-2">
                     <NavLink class="nav-link" href="Account/Register">
                         <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
                     </NavLink>
-                </div>
+                </div> -->
+
+                <!-- Login -->
                 <div class="nav-item px-2">
                     <NavLink class="nav-link" href="account/login" Match="NavLinkMatch.All">
-                        <span class="i bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Login
                     </NavLink>
                 </div>
             </NotAuthorized>
-            <Authorized> 
+
+            <Authorized>
+                <!-- Overview student (remplace Home) -->
+                <div class="nav-item px-2">
+                    <NavLink class="nav-link" href="/student/overview" Match="NavLinkMatch.All">
+                        <span class="bi bi-grid-nav-menu" aria-hidden="true"></span> Overview
+                    </NavLink>
+                </div>
+
+                <!-- My course -->
+                <div class="nav-item px-2">
+                    <NavLink class="nav-link" href="/student/course">
+                        <span class="bi bi-book-nav-menu" aria-hidden="true"></span> My Course
+                    </NavLink> <!-- to do : remplace @course.Name  -->
+                </div>
+
+                <!-- DemoAuth 
                 <div class="nav-item px-2">
                     <NavLink class="nav-link" href="demoauth">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> DemoAuth 
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> DemoAuth
                     </NavLink>
-                </div>
-                <div class="nav-item px-2">
-                    <NavLink class="nav-link" href="demoauth2">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Load data OnInitialized 
-                    </NavLink>
-                </div>
-                <div class="nav-item px-2">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                    <div class="nav-item px-2">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout 
-                        </button>
-                    </form>
-                </div>
-          </Authorized>
+                </div> -->
+            </Authorized>
         </AuthorizeView>
+
+        <!-- bottom section- profil et logout -->
+        <div class="nav-bottom">
+            <AuthorizeView>
+                <Authorized>
+
+                    <div class="nav-item px-2">
+                        <NavLink class="nav-link" href="Account/Manage">
+                            <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-2">
+                        <form action="Account/Logout" method="post">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                            <button type="submit" class="nav-link text-danger">
+                                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                            </button>
+                        </form>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </div>
     </nav>
 </div>
+
+
 
 @code {
     private string? currentUrl;
@@ -65,6 +94,198 @@
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
     }
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
+
+
+
+@* @implements IDisposable
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using System.Text.Json
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="">
+            <span class="bi bi-mortarboard text-white fs-4 me-3" style="line-height: 1;"></span>
+            <span class="fs-5 text-white fw-bold">LexiTech</span>
+        </a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        @if (isLoading)
+        {
+            <div class="nav-item px-2 text-center">
+                <span class="text-light">Loading...</span>
+            </div>
+        }
+        else if (!isAuthenticated)
+        {
+            <!-- Home before login -->
+            <div class="nav-item px-2">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-2">
+                <NavLink class="nav-link" href="account/login" Match="NavLinkMatch.All">
+                    <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Login
+                </NavLink>
+            </div>
+        }
+        else
+        {
+            <!-- dynamic Menu API -->
+            @if (menuItems != null)
+            {
+                @foreach (var item in menuItems)
+                {
+                    <div class="nav-item px-2">
+                        <NavLink class="nav-link" href="@item.Url" Match="@GetNavLinkMatch(item.Url)">
+                            <span class="@item.Icon" aria-hidden="true"></span> @item.Title
+                        </NavLink>
+                    </div>
+                }
+            }
+
+            <!-- bottom section - profil et logout -->
+            <div class="nav-bottom">
+                <div class="nav-item px-2">
+                    <NavLink class="nav-link" href="Account/Manage">
+                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @userInfo?.Name
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-2">
+                    <button type="button" class="nav-link text-danger" @onclick="Logout">
+                        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                    </button>
+                </div>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    private string? currentUrl;
+    private bool isLoading = true;
+    private bool isAuthenticated = false;
+    private List<MenuItem>? menuItems;
+    private UserInfo? userInfo;
+
+    // Classes to mapp the API response
+    public class MenuItem
+    {
+        public string Title { get; set; } = "";
+        public string Url { get; set; } = "";
+        public string Icon { get; set; } = "";
+    }
+
+    public class UserInfo
+    {
+        public string Name { get; set; } = "";
+        public string Role { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+
+        await LoadMenuAndUser();
+    }
+
+    private async Task LoadMenuAndUser()
+    {
+        try
+        {
+            isLoading = true;
+
+            // Verify if the user is authenticated (token exists)
+            var token = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "authToken");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                isAuthenticated = false;
+                return;
+            }
+
+            // add token to API requests
+            Http.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            // API call to get the menu items
+            var menuResponse = await Http.GetAsync("/api/sidebar/menu");
+
+            if (menuResponse.IsSuccessStatusCode)
+            {
+                var menuJson = await menuResponse.Content.ReadAsStringAsync();
+                menuItems = JsonSerializer.Deserialize<List<MenuItem>>(menuJson, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                isAuthenticated = true;
+
+                // take user info from localStorage 
+                var userInfoJson = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "userInfo");
+                if (!string.IsNullOrEmpty(userInfoJson))
+                {
+                    userInfo = JsonSerializer.Deserialize<UserInfo>(userInfoJson, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+            }
+            else
+            {
+                // Token invalide ou expiré
+                await ClearAuthData();
+                isAuthenticated = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement du menu: {ex.Message}");
+            await ClearAuthData();
+            isAuthenticated = false;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Logout()
+    {
+        await ClearAuthData();
+        NavigationManager.NavigateTo("/", true);
+    }
+
+    private async Task ClearAuthData()
+    {
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userInfo");
+        Http.DefaultRequestHeaders.Authorization = null;
+        isAuthenticated = false;
+        menuItems = null;
+        userInfo = null;
+    }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
@@ -72,9 +293,20 @@
         StateHasChanged();
     }
 
+    private NavLinkMatch GetNavLinkMatch(string url)
+    {
+        // Match exact pour les pages d'accueil
+        if (url == "" || url == "/" || url == "/student/overview" || url == "/teacher/overview")
+        {
+            return NavLinkMatch.All;
+        }
+        return NavLinkMatch.Prefix;
+    }
+
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
-
 }
+ *@
+
