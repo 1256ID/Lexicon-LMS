@@ -1,17 +1,404 @@
 ﻿@page "/teacher/overview"
-@rendermode InteractiveWebAssembly
 
-@using LMS.Blazor.Client.Services
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+
+@using System.Text.Json
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@using System.Security.Claims
 
 @attribute [Authorize]
 
 <AuthorizeView Roles="Teacher">
     <Authorized>
-        <p>Welcome <strong>@context.User.Identity?.Name</strong></p>
+        <div class="content">
+            <!-- Hero Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm hero-card">
+                        <div class="card-body text-white p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h2 class="fw-bold mb-1">Welcome, @context.User.Identity?.Name</h2>
+                                    <p class="mb-0 opacity-75">
+                                        <i class="bi bi-calendar3"></i> @DateTime.Today.ToString("dddd, MMMM dd, yyyy")
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i>@dashboardData?.TotalStudents</h4>
+                                    <small class="opacity-75">active students</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100 shadow-sm hover-card text-center">
+                        <div class="card-body p-4">
+                            <div class="text-primary mb-2">
+                                <i class="bi bi-book fs-1"></i>
+                            </div>
+                            <h3 class="fw-bold text-primary">@dashboardData?.ActiveCourses</h3>
+                            <p class="text-muted mb-0">Active Courses</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100 shadow-sm hover-card text-center">
+                        <div class="card-body p-4">
+                            <div class="text-success mb-2">
+                                <i class="bi bi-file-earmark-text fs-1"></i>
+                            </div>
+                            <h3 class="fw-bold text-success">@dashboardData?.TotalModules</h3>
+                            <p class="text-muted mb-0">Total Modules</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100 shadow-sm hover-card text-center">
+                        <div class="card-body p-4">
+                            <div class="@(dashboardData?.PendingAssignments > 0 ? "text-warning" : "text-info") mb-2 position-relative">
+                                <i class="bi bi-inbox fs-1"></i>
+                                @if (dashboardData?.PendingAssignments > 0)
+                                {
+                                    <span class="position-absolute translate-middle badge rounded-pill bg-danger">
+                                        @dashboardData.PendingAssignments
+                                    </span>
+                                }
+                            </div>
+                            <h3 class="fw-bold @(dashboardData?.PendingAssignments > 0 ? "text-warning" : "text-info")">@dashboardData?.PendingAssignments</h3>
+                            <p class="text-muted mb-0">Pending Review</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100 shadow-sm hover-card text-center">
+                        <div class="card-body p-4">
+                            <div class="text-purple mb-2">
+                                <i class="bi bi-calendar-week fs-1"></i>
+                            </div>
+                            <h3 class="fw-bold text-purple">@dashboardData?.ThisWeekActivities</h3>
+                            <p class="text-muted mb-0">This Week</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="row">
+                <!-- Left Column - 60% -->
+                <div class="col-lg-7 col-md-12">
+                    <!-- Today's Activities -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light border-0 p-4">
+                            <h5 class="fw-bold mb-0 text-primary">
+                                <i class="bi bi-calendar-day me-2"></i>Today's Activities
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            @if (dashboardData?.TodayActivities != null && dashboardData.TodayActivities.Any())
+                            {
+                                @foreach (var activity in dashboardData.TodayActivities)
+                                {
+                                    <div class="border-start border-4 border-primary ps-3 mb-3">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="fw-bold mb-1">@activity.Name</h6>
+                                                <p class="text-muted mb-1">
+                                                    <small><i class="bi bi-clock me-1"></i>@activity.StartTime.ToString("HH:mm") - @activity.EndTime.ToString("HH:mm")</small>
+                                                </p>
+                                                <p class="mb-0">@activity.Description</p>
+                                            </div>
+                                            <span class="badge bg-light text-dark">@activity.Type</span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-calendar-x fs-1 mb-2"></i>
+                                    <p class="mb-0">No activities scheduled for today</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Recent Submissions -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light border-0 p-4">
+                            <h5 class="fw-bold mb-0 text-primary">
+                                <i class="bi bi-file-earmark-arrow-up me-2"></i>Recent Submissions
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            @if (dashboardData?.RecentSubmissions != null && dashboardData.RecentSubmissions.Any())
+                            {
+                                @foreach (var submission in dashboardData.RecentSubmissions.Take(5))
+                                {
+                                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                        <div>
+                                            <h6 class="mb-1">@submission.StudentName</h6>
+                                            <small class="text-muted">@submission.AssignmentName</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted d-block">@submission.SubmissionDate.ToString("MM/dd HH:mm")</small>
+                                            <button class="btn btn-outline-primary btn-sm" @onclick="@(() => ReviewSubmission(submission.Id))">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="text-end mt-3">
+                                    <button class="btn btn-primary btn-sm" @onclick="@(() => Navigation.NavigateTo("/teacher/submissions"))">
+                                        View All <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-1 mb-2"></i>
+                                    <p class="mb-0">No recent submissions</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Deadlines -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light border-0 p-4">
+                            <h5 class="fw-bold mb-0 text-primary">
+                                <i class="bi bi-alarm me-2"></i>Upcoming Deadlines
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            @if (dashboardData?.UpcomingDeadlines != null && dashboardData.UpcomingDeadlines.Any())
+                            {
+                                @foreach (var deadline in dashboardData.UpcomingDeadlines.Take(5))
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h6 class="mb-1">@deadline.Name</h6>
+                                            <small class="text-muted">@deadline.CourseName</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge @(deadline.IsUrgent ? "bg-danger" : "bg-warning")">
+                                                @deadline.DueDate.ToString("MM/dd")
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-check-circle fs-1 mb-2"></i>
+                                    <p class="mb-0">No upcoming deadlines</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - 40% -->
+                <div class="col-lg-5 col-md-12">
+                    <!-- Quick Actions -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light border-0 p-4">
+                            <h5 class="fw-bold mb-0 text-primary">
+                                <i class="bi bi-lightning me-2"></i>Quick Actions
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-2">
+                                <div class="dropdown d-grid">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-plus-circle me-2"></i>Create Content
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" @onclick="@(() => Navigation.NavigateTo("/teacher/courses/new"))">
+                                                <i class="bi bi-book me-2"></i>New Course
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" @onclick="@(() => Navigation.NavigateTo("/teacher/modules/new"))">
+                                                <i class="bi bi-file-text me-2"></i>New Module
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" @onclick="@(() => Navigation.NavigateTo("/teacher/activities/new"))">
+                                                <i class="bi bi-calendar-event me-2"></i>New Activity
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <button class="btn btn-outline-primary" @onclick="@(() => Navigation.NavigateTo("/teacher/students"))">
+                                    <i class="bi bi-people me-2"></i>Manage Students
+                                </button>
+                                <button class="btn btn-outline-primary" @onclick="@(() => Navigation.NavigateTo("/teacher/documents/upload"))">
+                                    <i class="bi bi-cloud-upload me-2"></i>Upload Document
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Courses -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light border-0 p-4">
+                            <h5 class="fw-bold mb-0 text-primary">
+                                <i class="bi bi-book me-2"></i>My Courses
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            @if (dashboardData?.TeacherCourses != null && dashboardData.TeacherCourses.Any())
+                            {
+                                @foreach (var course in dashboardData.TeacherCourses.Take(4))
+                                {
+                                    <div class="border rounded p-3 mb-3 hover-card course-item-hover"
+                                         @onclick="@(() => Navigation.NavigateTo($"/teacher/courses/{course.Id}"))">
+                                        <h6 class="fw-bold mb-1 text-primary">@course.Name</h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-people me-1"></i>@course.StudentCount students
+                                        </small>
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar3 me-1"></i>@course.StartDate.ToString("MM/dd/yyyy")
+                                            </small>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="text-end">
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="@(() => Navigation.NavigateTo("/teacher/courses"))">
+                                        View All <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-book fs-1 mb-2"></i>
+                                    <p class="mb-0">No assigned courses</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </Authorized>
+    <NotAuthorized>
+        <div class="content">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Access Denied</h4>
+                <p>You must be logged in as a Teacher to access this page.</p>
+                <hr>
+                <p class="mb-0">Please <a href="/login" class="alert-link">login</a> with your teacher credentials.</p>
+            </div>
+        </div>
+    </NotAuthorized>
 </AuthorizeView>
 
+@code {
+    private TeacherOverviewDto? dashboardData;
+    private bool isLoading = true;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOverviewData();
+    }
+
+    private async Task LoadOverviewData()
+    {
+        try
+        {
+            isLoading = true;
+
+            // API endpoint to get overview data
+            var response = await HttpClient.GetAsync("/api/teacher/overview");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                dashboardData = JsonSerializer.Deserialize<TeacherOverviewDto>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            else
+            {
+                // Error case
+                Console.WriteLine($"Failed to load overview data: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exception
+            Console.WriteLine($"Error loading overview data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ReviewSubmission(int submissionId)
+    {
+        Navigation.NavigateTo($"/teacher/submissions/{submissionId}");
+    }
+
+    // DTO Classes for API response
+    public class TeacherOverviewDto
+    {
+        public int TotalStudents { get; set; }
+        public int ActiveCourses { get; set; }
+        public int TotalModules { get; set; }
+        public int PendingAssignments { get; set; }
+        public int ThisWeekActivities { get; set; }
+        public List<TodayActivityDto> TodayActivities { get; set; } = new();
+        public List<RecentSubmissionDto> RecentSubmissions { get; set; } = new();
+        public List<UpcomingDeadlineDto> UpcomingDeadlines { get; set; } = new();
+        public List<TeacherCourseDto> TeacherCourses { get; set; } = new();
+    }
+
+    public class TodayActivityDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public string Type { get; set; } = string.Empty;
+    }
+
+    public class RecentSubmissionDto
+    {
+        public int Id { get; set; }
+        public string StudentName { get; set; } = string.Empty;
+        public string AssignmentName { get; set; } = string.Empty;
+        public DateTime SubmissionDate { get; set; }
+    }
+
+    public class UpcomingDeadlineDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string CourseName { get; set; } = string.Empty;
+        public DateTime DueDate { get; set; }
+        public bool IsUrgent { get; set; }
+    }
+
+    public class TeacherCourseDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int StudentCount { get; set; }
+        public DateTime StartDate { get; set; }
+    }
+}
