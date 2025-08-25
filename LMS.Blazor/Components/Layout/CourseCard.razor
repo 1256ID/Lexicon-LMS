@@ -1,9 +1,7 @@
 ﻿@inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
     <div class="card h-100 shadow-sm hover-card" style="border-radius: 0.8rem; transition: all 0.3s ease;">
-
         <!-- Card Content (clickable area) -->
         <div class="card-body d-flex flex-column p-4" style="cursor: pointer;" @onclick="GoToModules">
             <h5 class="card-title fw-bold mb-3 border-bottom pb-2" style="color: #1b6ec2;">
@@ -17,18 +15,18 @@
                     <small class="text-muted">
                         <strong>📅 Start:</strong> YYYY/MM/DD <!-- @Course.StartDate -->
                     </small>
-
                     <!-- Edit Icon for Teachers - Bottom Right -->
-                    @if (IsTeacher)
-                    {
-                        <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2"
-                                @onclick="GoToEditCourse"
-                                @onclick:stopPropagation="true"
-                                title="Edit Course"
-                                style="width: 28px; height: 28px; padding: 0;">
-                            <span class="bi-pencil-edit"></span>
-                        </button>
-                    }
+                    <AuthorizeView Roles="Teacher">
+                        <Authorized>
+                            <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2"
+                                    @onclick="GoToEditCourse"
+                                    @onclick:stopPropagation="true"
+                                    title="Edit Course"
+                                    style="width: 28px; height: 28px; padding: 0;">
+                                <span class="bi-pencil-edit"></span>
+                            </button>
+                        </Authorized>
+                    </AuthorizeView>
                 </div>
             </div>
         </div>
@@ -37,17 +35,6 @@
 
 @code {
     // [Parameter] public Course Course { get; set; }
-
-    private bool IsTeacher { get; set; } = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        if (authState.User.Identity.IsAuthenticated)
-        {
-            IsTeacher = authState.User.IsInRole("Teacher");
-        }
-    }
 
     private void GoToModules()
     {
