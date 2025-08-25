@@ -1,0 +1,17 @@
+﻿@page "/teacher/overview"
+@rendermode InteractiveWebAssembly
+
+@using LMS.Blazor.Client.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@attribute [Authorize]
+
+<AuthorizeView Roles="Teacher">
+    <Authorized>
+        <p>Welcome <strong>@context.User.Identity?.Name</strong></p>
+    </Authorized>
+</AuthorizeView>
+
+
