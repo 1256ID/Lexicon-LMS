@@ -1,0 +1,127 @@
+﻿@page "/Account/RegisterStudent"
+@attribute [Authorize(Roles = "Teacher")]
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using LMS.Blazor.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserStore<ApplicationUser> UserStore
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IEmailSender<ApplicationUser> EmailSender
+@inject ILogger<RegisterStudent> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Register Student</PageTitle>
+
+<div class="container-fluid">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-lg-5 col-md-7 col-sm-10">
+            <div class="card shadow-lg" style="border-radius: 1rem;">
+                <div class="card-header text-center py-4" style="background-color: #1b6ec2; color: white; border-radius: 1rem 1rem 0 0;">
+                    <h2 class="mb-0 fw-bold">Register as Student</h2>
+                    <p class="mb-0 mt-2">Add a new student account</p>
+                </div>
+                <div class="card-body p-4">
+                    <StatusMessage Message="@Message" />
+                    <EditForm Model="Input" OnValidSubmit="RegisterUser">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger mb-3" role="alert" />
+                        <div class="form-floating mb-3">
+                            <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                            <label for="email" class="form-label">Email Address</label>
+                            <ValidationMessage For="() => Input.Email" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" placeholder="password" />
+                            <label for="password" class="form-label">Password</label>
+                            <ValidationMessage For="() => Input.Password" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-4">
+                            <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="password" />
+                            <label for="confirm-password" class="form-label">Confirm Password</label>
+                            <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                        </div>
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 0.5rem;">
+                                Create Student Account
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IEnumerable<IdentityError>? identityErrors;
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    public async Task RegisterUser()
+    {
+        var user = CreateUser();
+        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        await UserManager.AddToRoleAsync(user, "Student");
+        Logger.LogInformation("Student account created by teacher.");
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+        RedirectManager.RedirectTo("/");
+    }
+
+    private ApplicationUser CreateUser()
+    {
+        try
+        {
+            return Activator.CreateInstance<ApplicationUser>();
+        } catch
+        {
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. Ensure it has a parameterless constructor.");
+        }
+    }
+
+    private IUserEmailStore<ApplicationUser> GetEmailStore()
+    {
+        if (!UserManager.SupportsUserEmail)
+            throw new NotSupportedException("The user store must support email.");
+        return (IUserEmailStore<ApplicationUser>)UserStore;
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+        [Required]
+        [StringLength(100, MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+        [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage = "The password and confirmation do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}
