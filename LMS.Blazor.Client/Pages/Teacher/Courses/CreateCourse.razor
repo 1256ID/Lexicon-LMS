@@ -1,0 +1,117 @@
+﻿@page "/teacher/courses/new"
+@using LMS.Blazor.Client.Components.forms
+
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Teacher")]
+
+<PageTitle>Create New Course</PageTitle>
+
+<div class="content">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses" class="text-decoration-none">
+                    <i class="bi bi-book me-1"></i>Courses
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Create New Course</li>
+        </ol>
+    </nav>
+
+    
+    <div class="row">
+        <div class="col-12">
+            <!-- CREATE MODE: No initial values, fields are empty -->
+            <CourseForm HeaderTitle="Create New Course"
+                       SubmitButtonText="Create Course"
+                       ShowDeleteButton="false"
+                       OnCancel="@HandleCancel"
+                       OnSubmit="@HandleSubmit" />
+            
+            <!-- With Course model:
+            <CourseForm Course="@newCourse"
+                       OnValidSubmit="@HandleSubmit"
+                       OnCancel="@HandleCancel"
+                       HeaderTitle="Create New Course"
+                       HeaderIcon="bi-plus-circle"
+                       SubmitButtonText="Create Course"
+                       SubmitIcon="bi-plus-lg"
+                       ShowDeleteButton="false"
+                       ErrorMessage="@errorMessage"
+                       SuccessMessage="@successMessage"
+                       IsSubmitting="@isSubmitting" />
+            -->
+        </div>
+    </div>
+</div>
+
+@code {
+    // ===== TEMPORARY VARIABLES =====
+    // With Course model:
+    // private Course newCourse = new() { StartDate = DateTime.Today };
+    // private bool isSubmitting = false;
+    // private string errorMessage = string.Empty;
+    // private string successMessage = string.Empty;
+
+    private async Task HandleSubmit()
+    {
+        // TEMPORARY - replace with real API call:
+        await Task.Delay(500);
+        Navigation.NavigateTo("/teacher/courses");
+        
+        // WITH API :
+        /*
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
+            // Validate dates
+            if (newCourse.EndDate <= newCourse.StartDate)
+            {
+                errorMessage = "End date must be after start date";
+                return;
+            }
+
+            // API call to create course
+            var response = await HttpClient.PostAsJsonAsync("api/courses", newCourse);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var createdCourse = await response.Content.ReadFromJsonAsync<Course>();
+                successMessage = "Course created successfully!";
+                await Task.Delay(1500);
+                Navigation.NavigateTo("/teacher/courses");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to create course: {errorContent}";
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Network error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+        */
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/teacher/courses");
+    }
+}

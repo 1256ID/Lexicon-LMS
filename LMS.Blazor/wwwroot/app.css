@@ -65,6 +65,8 @@ a, .btn-link {
     color: #6f42c1 !important;
 }
 
+
+
 .course-item-hover {
     cursor: pointer;
     transition: all 0.3s ease;
@@ -73,6 +75,13 @@ a, .btn-link {
 .position-absolute.translate-middle.badge {
     top: 0.8rem;
     left: 2.2rem;
+}
+
+/* ========== COURSE FORM ========== */
+.form-floating .course-description {
+    height: 180px !important;
+    min-height: 180px !important;
+    resize: vertical !important;
 }
 
 /* ========== FORMS & VALIDATION ========== */
