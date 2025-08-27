@@ -1,0 +1,200 @@
+﻿<!-- When we have our Activity model:
+<EditForm Model="@Activity" OnValidSubmit="@HandleValidSubmit" class="needs-validation" novalidate>
+    <DataAnnotationsValidator />
+-->
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light border-0 p-4">
+        <h5 class="fw-bold mb-0 text-purple">
+            <i class="bi bi-calendar-event me-2"></i>@HeaderTitle
+        </h5>
+    </div>
+    <div class="card-body p-4">
+        <div class="row">
+            <div class="col-12 mb-3">
+                <div class="form-floating">
+                    <input @bind="activityName" class="form-control" id="activityName" name="activityName" placeholder="Activity Name" />
+                    <!-- With model: <InputText @bind-Value="Activity.Name" class="form-control" id="activityName" placeholder="Activity Name" /> -->
+                    <label for="activityName">Activity Name *</label>
+                    <!-- With model: <ValidationMessage For="@(() => Activity.Name)" class="text-danger small" /> -->
+                </div>
+            </div>
+
+            <div class="col-12 mb-3">
+                <div class="form-floating">
+                    <textarea @bind="activityDescription" class="form-control activity-description" id="activityDescription" name="activityDescription"
+                              placeholder="Activity Description" style="height: 180px; min-height: 180px; resize: vertical;"></textarea>
+                    <!-- With model: <InputTextArea @bind-Value="Activity.Description" class="form-control activity-description" id="activityDescription" placeholder="Activity Description" /> -->
+                    <label for="activityDescription">Activity Description *</label>
+                    <!-- With model: <ValidationMessage For="@(() => Activity.Description)" class="text-danger small" /> -->
+                </div>
+            </div>
+
+            <div class="col-12 mb-3">
+                <div class="form-floating">
+                    <select @bind="activityType" class="form-select" id="activityType" name="activityType">
+                        <option value="">Select Activity Type</option>
+                        <option value="ELearning">E-learning Session</option>
+                        <option value="Lecture">Lecture</option>
+                        <option value="Exercise">Exercise Session</option>
+                        <option value="Assignment">Assignment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <!-- With model: <InputSelect @bind-Value="Activity.Type" class="form-select" id="activityType"> -->
+                    <label for="activityType">Activity Type *</label>
+                    <!-- With model: <ValidationMessage For="@(() => Activity.Type)" class="text-danger small" /> -->
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <input @bind="startDate" type="date" class="form-control" id="activityStartDate" name="activityStartDate" />
+                    <!-- With model: <InputDate @bind-Value="Activity.StartDate" class="form-control" id="activityStartDate" /> -->
+                    <label for="activityStartDate">Start Date *</label>
+                    <!-- With model: <ValidationMessage For="@(() => Activity.StartDate)" class="text-danger small" /> -->
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <input @bind="endDate" type="date" class="form-control" id="activityEndDate" name="activityEndDate" />
+                    <!-- With model: <InputDate @bind-Value="Activity.EndDate" class="form-control" id="activityEndDate" /> -->
+                    <label for="activityEndDate">End Date *</label>
+                    <!-- With model: <ValidationMessage For="@(() => Activity.EndDate)" class="text-danger small" /> -->
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success mt-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@successMessage
+            </div>
+        }
+    </div>
+
+    <div class="card-footer bg-light border-0 p-4">
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" @onclick="HandleCancel">
+                <i class="bi bi-arrow-left me-2"></i>Cancel
+            </button>
+            <div>
+                @if (ShowDeleteButton)
+                {
+                    <button type="button" class="btn btn-outline-danger me-2" @onclick="HandleDelete">
+                        <i class="bi bi-trash me-2"></i>Delete
+                    </button>
+                }
+                <button type="button" class="btn" style="background-color: #6f42c1; color: white;" @onclick="HandleSubmit" disabled="@isSubmitting">
+                    <!-- With model: <button type="submit" class="btn" style="background-color: #6f42c1; color: white;" disabled="@isSubmitting"> -->
+                    @if (isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-lg me-2"></i>
+                    }
+                    @SubmitButtonText
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Close EditForm:
+</EditForm>
+-->
+@code {
+    // ===== COMPONENT PARAMETERS =====
+    [Parameter] public string HeaderTitle { get; set; } = "Activity Information";
+    [Parameter] public string SubmitButtonText { get; set; } = "Save Activity";
+    [Parameter] public bool ShowDeleteButton { get; set; } = false;
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+
+    // ===== PARAMETERS FOR PRE-FILLING =====
+    [Parameter] public string? InitialActivityName { get; set; }
+    [Parameter] public string? InitialDescription { get; set; }
+    [Parameter] public string? InitialActivityType { get; set; }
+    [Parameter] public DateTime? InitialStartDate { get; set; }
+    [Parameter] public DateTime? InitialEndDate { get; set; }
+
+    // ===== FORM VARIABLES =====
+    private string activityName = "";
+    private string activityDescription = "";
+    private string activityType = "";
+    private DateTime startDate = DateTime.Today;
+    private DateTime endDate = DateTime.Today.AddDays(7);
+
+    // With Activity model:
+    // [Parameter] public Activity Activity { get; set; } = new();
+    // [Parameter] public EventCallback<Activity> OnValidSubmit { get; set; }
+
+    // ===== STATE VARIABLES =====
+    private bool isSubmitting = false;
+    private string errorMessage = "";
+    private string successMessage = "";
+
+    // ===== INITIALIZATION =====
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(InitialActivityName))
+            activityName = InitialActivityName;
+
+        if (!string.IsNullOrEmpty(InitialDescription))
+            activityDescription = InitialDescription;
+
+        if (!string.IsNullOrEmpty(InitialActivityType))
+            activityType = InitialActivityType;
+
+        if (InitialStartDate.HasValue)
+            startDate = InitialStartDate.Value;
+
+        if (InitialEndDate.HasValue)
+            endDate = InitialEndDate.Value;
+    }
+
+    // ===== FORM METHODS =====
+    private void HandleSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(activityName))
+        {
+            errorMessage = "Activity name is required";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(activityType))
+        {
+            errorMessage = "Activity type is required";
+            return;
+        }
+
+        if (endDate <= startDate)
+        {
+            errorMessage = "End date must be after start date";
+            return;
+        }
+
+        errorMessage = "";
+        OnSubmit.InvokeAsync();
+    }
+
+    private void HandleCancel()
+    {
+        OnCancel.InvokeAsync();
+    }
+
+    private void HandleDelete()
+    {
+        OnDelete.InvokeAsync();
+    }
+}
