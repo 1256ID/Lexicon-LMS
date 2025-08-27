@@ -143,6 +143,18 @@
             await TokenStorage.StoreTokensAsync(user.Id, tokens);
 
             Logger.LogInformation("User logged in.");
+
+            var roles = await UserManager.GetRolesAsync(user);
+
+            if (roles.Contains("Student"))
+            {
+                ReturnUrl = "/student/overview";
+            }
+            else if (roles.Contains("Teacher"))
+            {
+                ReturnUrl = "/teacher/overview";
+            }
+
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
