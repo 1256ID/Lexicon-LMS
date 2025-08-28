@@ -1,14 +1,14 @@
 ﻿@inject NavigationManager Navigation
 
 <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-    <div class="card h-100 shadow-sm hover-card" style="border-radius: 0.8rem; transition: all 0.3s ease;">
+    <div class="card h-100 shadow-sm hover-card activity-card">
         <!-- Card Content (clickable area) -->
-        <div class="card-body d-flex flex-column p-4" style="cursor: pointer;" @onclick="OpenActivity">
+        <div class="card-body d-flex flex-column p-4 card-content" @onclick="OpenActivity">
             <h6 class="card-subtitle mb-2 text-muted">Activity Type</h6> <!-- @Activity.Type -->
-            <h5 class="card-title fw-bold mb-3 border-bottom pb-2" style="color: #1b6ec2;">
+            <h5 class="card-title fw-bold mb-3 border-bottom pb-2 activity-text-purple">
                 Activity Name <!-- @Activity.Name -->
             </h5>
-            <p class="card-text flex-grow-1" style="min-height: 60px; overflow: hidden;">
+            <p class="card-text flex-grow-1 card-content">
                 Activity Description <!-- @Activity.Description -->
             </p>
             <div class="mt-auto pt-3">
@@ -20,11 +20,10 @@
                     <!-- Edit Icon for Teachers - Bottom Right -->
                     <AuthorizeView Roles="Teacher">
                         <Authorized>
-                            <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2"
+                            <button class="btn btn-sm activity-btn-purple position-absolute top-50 end-0 translate-middle-y me-2 edit-btn"
                                     @onclick="GoToEditActivity"
                                     @onclick:stopPropagation="true"
-                                    title="Edit Activity"
-                                    style="width: 28px; height: 28px; padding: 0;">
+                                    title="Edit Activity">
                                 <span class="bi-pencil-edit"></span>
                             </button>
                         </Authorized>

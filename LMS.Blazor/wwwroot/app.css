@@ -55,6 +55,50 @@ a, .btn-link {
     box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
 }
 
+/* ========== CARDS STYLES ========== */
+:root {
+    --bs-purple: #6f42c1;
+}
+
+.course-card {
+    border-left: 4px solid var(--bs-primary);
+    border-radius: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.module-card {
+    border-left: 4px solid var(--bs-success);
+    border-radius: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.activity-card {
+    border-left: 4px solid var(--bs-purple);
+    border-radius: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.card-content {
+    cursor: pointer;
+    min-height: 60px;
+    overflow: hidden;
+}
+
+.edit-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+}
+
+.activity-btn-purple {
+    border-color: var(--bs-purple);
+    color: var(--bs-purple);
+}
+
+.activity-text-purple {
+    color: var(--bs-purple);
+}
+
 /* ========== TEACHER OVERVIEW ========== */
 .hero-card {
     border-radius: 0.8rem;
@@ -65,8 +109,6 @@ a, .btn-link {
     color: #6f42c1 !important;
 }
 
-
-
 .course-item-hover {
     cursor: pointer;
     transition: all 0.3s ease;
@@ -75,13 +117,6 @@ a, .btn-link {
 .position-absolute.translate-middle.badge {
     top: 0.8rem;
     left: 2.2rem;
-}
-
-/* ========== COURSE FORM ========== */
-.form-floating .course-description {
-    height: 180px !important;
-    min-height: 180px !important;
-    resize: vertical !important;
 }
 
 /* ========== FORMS & VALIDATION ========== */
@@ -153,6 +188,12 @@ a, .btn-link {
 }
 
 .module-description {
+    height: 180px !important;
+    min-height: 180px !important;
+    resize: vertical !important;
+}
+
+.activity-description {
     height: 180px !important;
     min-height: 180px !important;
     resize: vertical !important;

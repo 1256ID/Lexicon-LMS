@@ -1,0 +1,155 @@
+﻿@page "/teacher/courses/{CourseId:int}/modules/{ModuleId:int}/activities/new"
+
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+
+@using LMS.Blazor.Client.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Teacher")]
+
+<PageTitle>Create New Activity</PageTitle>
+
+<div class="content">
+    <!-- Breadcrumb with full hierarchy -->
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses/@CourseId" class="text-decoration-none">
+                    <i class="bi bi-book me-1"></i>@courseName
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses/@CourseId/modules/@ModuleId" class="text-decoration-none">
+                    @moduleName
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Create New Activity</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            <!-- CREATE MODE: No initial values, fields are empty -->
+            <ActivityForm HeaderTitle="Create New Activity"
+                          SubmitButtonText="Create Activity"
+                          ShowDeleteButton="false"
+                          OnCancel="@HandleCancel"
+                          OnSubmit="@HandleSubmit" />
+
+            <!-- With Activity model:
+            <ActivityForm Activity="@newActivity"
+                         OnValidSubmit="@HandleSubmit"
+                         OnCancel="@HandleCancel"
+                         HeaderTitle="Create New Activity"
+                         HeaderIcon="bi-plus-circle"
+                         SubmitButtonText="Create Activity"
+                         SubmitIcon="bi-plus-lg"
+                         ShowDeleteButton="false"
+                         ErrorMessage="@errorMessage"
+                         SuccessMessage="@successMessage"
+                         IsSubmitting="@isSubmitting" />
+            -->
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    [Parameter] public int ModuleId { get; set; }
+
+    private string courseName = "Introduction to UI/UX Design"; 
+    private string moduleName = "Wireframing and Prototyping"; 
+
+    // ===== TEMPORARY VARIABLES =====
+    // With Activity model:
+    // private Activity newActivity = new() { ModuleId = ModuleId, StartDate = DateTime.Today, EndDate = DateTime.Today.AddDays(7) };
+    // private bool isSubmitting = false;
+    // private string errorMessage = string.Empty;
+    // private string successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNames();
+    }
+
+    private async Task LoadNames()
+    {
+        // TEMPORARY - Mock data
+        await Task.Delay(100);
+        
+
+        // WITH API - Uncomment later:
+        /*
+        try
+        {
+            var courseResponse = await HttpClient.GetAsync($"api/courses/{CourseId}");
+            var moduleResponse = await HttpClient.GetAsync($"api/modules/{ModuleId}");
+
+            if (courseResponse.IsSuccessStatusCode && moduleResponse.IsSuccessStatusCode)
+            {
+                var course = await courseResponse.Content.ReadFromJsonAsync<Course>();
+                var module = await moduleResponse.Content.ReadFromJsonAsync<Module>();
+                courseName = course.Name;
+                moduleName = module.Name;
+            }
+        }
+        catch (Exception)
+        {
+            courseName = "Course";
+            moduleName = "Module";
+        }
+        */
+    }
+
+    private void HandleSubmit()
+    {
+        Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules/{ModuleId}/activities");
+
+        // WITH API :
+        /*
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
+            // Validate dates
+            if (newActivity.EndDate <= newActivity.StartDate)
+            {
+                errorMessage = "End date must be after start date";
+                return;
+            }
+
+            // API call to create activity
+            var response = await HttpClient.PostAsJsonAsync("api/activities", newActivity);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var createdActivity = await response.Content.ReadFromJsonAsync<Activity>();
+                successMessage = "Activity created successfully!";
+                await Task.Delay(1500);
+                Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules/{ModuleId}/activities");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to create activity: {errorContent}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+        */
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules/{ModuleId}/activities");
+    }
+}
