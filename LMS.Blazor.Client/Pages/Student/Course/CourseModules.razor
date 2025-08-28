@@ -1,0 +1,42 @@
+﻿@rendermode InteractiveWebAssembly
+@attribute [Authorize(Roles = "Student")]
+@using LMS.Blazor.Client.Services
+@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager Nav
+@inject NavigationStateService NavState
+
+
+<div class="card">
+    <div class="card-header">Modules</div>
+    <ul class="list-group list-group-flush">
+        @foreach (var m in Modules)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@m.Title</span>
+                <button class="btn btn-primary" @onclick="() => OpenModule(m)">Open</button>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    private record ModuleVm(int Id, string Title);
+    private List<ModuleVm> Modules = new()
+    {
+        new(1, "Introduction"),
+        new(2, "C# Basics"),
+        new(3, "Web API"),
+    };
+
+    protected override void OnInitialized()
+    {
+        NavState.ClearModule();
+    }
+
+    private void OpenModule(ModuleVm m)
+    {
+        NavState.SetModule(m.Id, m.Title);
+        Nav.NavigateTo($"/student/course/module/{m.Id}");
+    }
+}
+

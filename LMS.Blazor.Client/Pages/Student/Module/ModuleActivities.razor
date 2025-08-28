@@ -1,0 +1,40 @@
+﻿@using LMS.Blazor.Client.Services
+@inject NavigationManager Nav
+@inject NavigationStateService NavState
+
+<div class="card">
+    <div class="card-header">Activities</div>
+    <ul class="list-group list-group-flush">
+        @foreach (var m in Activities)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@m.Title</span>
+                <button class="btn btn-primary" @onclick="() => OpenActivity(m)">Open</button>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter] public int ModuleId { get; set; }
+
+    private record ActivityVm(int Id, string Title);
+    private List<ActivityVm> Activities = new()
+    {
+        new(1, "Intro Video"),
+        new(2, "Quiz 1"),
+        new(3, "Assignment")
+    };
+
+    protected override void OnInitialized()
+    {
+        NavState.ClearActivity();
+    }
+
+    private void OpenActivity(ActivityVm m)
+    {
+        var moduleName = NavState.CurrentModuleName ?? $"Module {ModuleId}";
+        NavState.SetActivity(ModuleId, moduleName, m.Id, m.Title);
+        Nav.NavigateTo($"/student/course/module/{ModuleId}/activity/{m.Id}");
+    }
+}
