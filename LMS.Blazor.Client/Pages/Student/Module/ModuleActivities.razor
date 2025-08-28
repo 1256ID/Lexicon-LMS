@@ -21,21 +21,9 @@
                     <div class="mt-auto pt-3">
                         <div class="bg-light rounded p-2 position-relative">
                             <small class="text-muted">
-                                <strong>📅 Start:</strong> @a.StartDate:yyyy/MM/dd<br>
-                                <strong>🏁 End:</strong> @a.EndDate:yyyy/MM/dd
+                                <strong>📅 Start:</strong> @a.StartDate<br>
+                                <strong>🏁 End:</strong> @a.EndDate
                             </small>
-
-                            <AuthorizeView Roles="Teacher">
-                                <Authorized>
-                                    <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2"
-                                            @onclick="(e) => GoToEditActivity(a, e)"
-                                            @onclick:stopPropagation="true"
-                                            title="Edit Activity"
-                                            style="width: 28px; height: 28px; padding: 0;">
-                                        <span class="bi-pencil-edit"></span>
-                                    </button>
-                                </Authorized>
-                            </AuthorizeView>
                         </div>
                     </div>
                 </div>
