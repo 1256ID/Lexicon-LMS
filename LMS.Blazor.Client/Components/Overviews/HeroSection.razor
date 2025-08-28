@@ -1,0 +1,38 @@
+﻿
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm hero-card">
+            <div class="card-body text-white p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="fw-bold mb-1">@WelcomeMessage</h2>
+                        <p class="mb-0 opacity-75">
+                            <i class="bi bi-calendar3"></i> @DateTime.Today.ToString("dddd, MMMM dd, yyyy")
+                        </p>
+                        @if (!string.IsNullOrEmpty(SubMessage))
+                        {
+                            <p class="mb-0 opacity-75 mt-1">@SubMessage</p>
+                        }
+                    </div>
+                    @if (ShowRightSection)
+                    {
+                        <div class="text-end">
+                            <h4 class="mb-0"><i class="bi @StatIcon me-2"></i>@StatValue</h4>
+                            <small class="opacity-75">@StatLabel</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public string WelcomeMessage { get; set; } = "Welcome";
+    [Parameter] public string SubMessage { get; set; } = "";
+    [Parameter] public bool ShowRightSection { get; set; } = true;
+    [Parameter] public string StatIcon { get; set; } = "bi-people-fill";
+    [Parameter] public string StatValue { get; set; } = "0";
+    [Parameter] public string StatLabel { get; set; } = "active students";
+}
