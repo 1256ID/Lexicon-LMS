@@ -35,6 +35,8 @@
 @code {
     [Parameter] public int ModuleId { get; set; }
 
+    private record ActivityVm(int Id, string Title, string Description, string Type, DateTime StartDate, DateTime EndDate);
+
     private List<ActivityVm> Activities = new()
     {
         new(1, "Intro Video", "Video explaining course intro", "Video", DateTime.Parse("2025-08-14"), DateTime.Parse("2025-08-15")),
@@ -48,12 +50,4 @@
         NavState.SetActivity(ModuleId, moduleName, a.Id, a.Title);
         Nav.NavigateTo($"/student/course/module/{ModuleId}/activity/{a.Id}");
     }
-
-    private void GoToEditActivity(ActivityVm a, MouseEventArgs e)
-    {
-        // Exempel: navigera till edit-page
-        Nav.NavigateTo($"/teacher/course/module/{ModuleId}/activity/{a.Id}/edit");
-    }
-
-    private record ActivityVm(int Id, string Title, string Description, string Type, DateTime StartDate, DateTime EndDate);
 }

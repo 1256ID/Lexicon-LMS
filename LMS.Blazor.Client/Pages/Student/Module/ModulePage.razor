@@ -59,6 +59,7 @@
     {
         var moduleName = NavState.CurrentModuleName ?? $"Module {ModuleId}";
         NavState.SetModule(ModuleId, moduleName); // gör modulen aktiv i navmenyn
+        NavState.ClearActivity();
     }
 
     private void SelectTab(Tab tab)

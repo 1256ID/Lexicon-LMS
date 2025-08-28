@@ -1,6 +1,8 @@
 ﻿@page "/student/course"
 @rendermode InteractiveWebAssembly
+@using LMS.Blazor.Client.Services
 @using Microsoft.AspNetCore.Authorization
+@inject NavigationStateService NavState
 
 @attribute [Authorize(Roles = "Student")]
 
@@ -68,5 +70,10 @@
     private void SelectTab(Tab tab)
     {
         SelectedTab = tab;
+    }
+
+    protected override void OnInitialized()
+    {
+        NavState.ClearModule();
     }
 }
