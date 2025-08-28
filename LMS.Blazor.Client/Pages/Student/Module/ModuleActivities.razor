@@ -2,39 +2,70 @@
 @inject NavigationManager Nav
 @inject NavigationStateService NavState
 
-<div class="card">
-    <div class="card-header">Activities</div>
-    <ul class="list-group list-group-flush">
-        @foreach (var m in Activities)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@m.Title</span>
-                <button class="btn btn-primary" @onclick="() => OpenActivity(m)">Open</button>
-            </li>
-        }
-    </ul>
+<div class="row">
+    @foreach (var a in Activities)
+    {
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div class="card h-100 shadow-sm hover-card" style="border-radius: 0.8rem; transition: all 0.3s ease;">
+                <!-- Card Content (clickable area) -->
+                <div class="card-body d-flex flex-column p-4" style="cursor: pointer;"
+                     @onclick="() => OpenActivity(a)">
+                    <h6 class="card-subtitle mb-2 text-muted">@a.Type</h6>
+                    <h5 class="card-title fw-bold mb-3 border-bottom pb-2" style="color: #1b6ec2;">
+                        @a.Title
+                    </h5>
+                    <p class="card-text flex-grow-1" style="min-height: 60px; overflow: hidden;">
+                        @a.Description
+                    </p>
+
+                    <div class="mt-auto pt-3">
+                        <div class="bg-light rounded p-2 position-relative">
+                            <small class="text-muted">
+                                <strong>📅 Start:</strong> @a.StartDate:yyyy/MM/dd<br>
+                                <strong>🏁 End:</strong> @a.EndDate:yyyy/MM/dd
+                            </small>
+
+                            <AuthorizeView Roles="Teacher">
+                                <Authorized>
+                                    <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2"
+                                            @onclick="(e) => GoToEditActivity(a, e)"
+                                            @onclick:stopPropagation="true"
+                                            title="Edit Activity"
+                                            style="width: 28px; height: 28px; padding: 0;">
+                                        <span class="bi-pencil-edit"></span>
+                                    </button>
+                                </Authorized>
+                            </AuthorizeView>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     [Parameter] public int ModuleId { get; set; }
 
-    private record ActivityVm(int Id, string Title);
     private List<ActivityVm> Activities = new()
     {
-        new(1, "Intro Video"),
-        new(2, "Quiz 1"),
-        new(3, "Assignment")
+        new(1, "Intro Video", "Video explaining course intro", "Video", DateTime.Parse("2025-08-14"), DateTime.Parse("2025-08-15")),
+        new(2, "Quiz 1", "First quiz for the module", "Quiz", DateTime.Parse("2025-08-16"), DateTime.Parse("2025-08-17")),
+        new(3, "Assignment", "Hands-on assignment", "Assignment", DateTime.Parse("2025-08-18"), DateTime.Parse("2025-08-19"))
     };
 
-    protected override void OnInitialized()
-    {
-        NavState.ClearActivity();
-    }
-
-    private void OpenActivity(ActivityVm m)
+    private void OpenActivity(ActivityVm a)
     {
         var moduleName = NavState.CurrentModuleName ?? $"Module {ModuleId}";
-        NavState.SetActivity(ModuleId, moduleName, m.Id, m.Title);
-        Nav.NavigateTo($"/student/course/module/{ModuleId}/activity/{m.Id}");
+        NavState.SetActivity(ModuleId, moduleName, a.Id, a.Title);
+        Nav.NavigateTo($"/student/course/module/{ModuleId}/activity/{a.Id}");
     }
+
+    private void GoToEditActivity(ActivityVm a, MouseEventArgs e)
+    {
+        // Exempel: navigera till edit-page
+        Nav.NavigateTo($"/teacher/course/module/{ModuleId}/activity/{a.Id}/edit");
+    }
+
+    private record ActivityVm(int Id, string Title, string Description, string Type, DateTime StartDate, DateTime EndDate);
 }

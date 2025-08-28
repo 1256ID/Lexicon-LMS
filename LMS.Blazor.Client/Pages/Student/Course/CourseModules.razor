@@ -1,42 +1,66 @@
-﻿@rendermode InteractiveWebAssembly
-@attribute [Authorize(Roles = "Student")]
-@using LMS.Blazor.Client.Services
-@using Microsoft.AspNetCore.Authorization
+﻿@using LMS.Blazor.Client.Services
 @inject NavigationManager Nav
 @inject NavigationStateService NavState
 
+<div class="row">
+    @foreach (var m in Modules)
+    {
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div class="card h-100 shadow-sm hover-card" style="border-radius: 0.8rem; transition: all 0.3s ease;">
+                <!-- Card Content (clickable area) -->
+                <div class="card-body d-flex flex-column p-4" style="cursor: pointer;"
+                     @onclick="() => GoToModule(m)">
+                    <h5 class="card-title fw-bold mb-3 border-bottom pb-2" style="color: #1b6ec2;">
+                        @m.Title
+                    </h5>
+                    <p class="card-text flex-grow-1" style="min-height: 60px; overflow: hidden;">
+                        @m.Description
+                    </p>
+                    <div class="mt-auto pt-3">
+                        <div class="bg-light rounded p-2 position-relative">
+                            <small class="text-muted">
+                                <strong>📅 Start:</strong> @m.StartDate:yyyy/MM/dd<br>
+                                <strong>🏁 End:</strong> @m.EndDate:yyyy/MM/dd
+                            </small>
 
-<div class="card">
-    <div class="card-header">Modules</div>
-    <ul class="list-group list-group-flush">
-        @foreach (var m in Modules)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@m.Title</span>
-                <button class="btn btn-primary" @onclick="() => OpenModule(m)">Open</button>
-            </li>
-        }
-    </ul>
+                            <AuthorizeView Roles="Teacher">
+                                <Authorized>
+                                    <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2"
+                                            @onclick="(e) => GoToEditModule(m, e)"
+                                            @onclick:stopPropagation="true"
+                                            title="Edit Module"
+                                            style="width: 28px; height: 28px; padding: 0;">
+                                        <span class="bi-pencil-edit"></span>
+                                    </button>
+                                </Authorized>
+                            </AuthorizeView>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
-    private record ModuleVm(int Id, string Title);
     private List<ModuleVm> Modules = new()
     {
-        new(1, "Introduction"),
-        new(2, "C# Basics"),
-        new(3, "Web API"),
+        new(1, "Introduction", "Intro to course", DateTime.Parse("2025-08-14"), DateTime.Parse("2025-08-20")),
+        new(2, "C# Basics", "Learn C#", DateTime.Parse("2025-08-21"), DateTime.Parse("2025-08-28")),
+        new(3, "Web API", "APIs in depth", DateTime.Parse("2025-08-29"), DateTime.Parse("2025-09-05"))
     };
 
-    protected override void OnInitialized()
-    {
-        NavState.ClearModule();
-    }
-
-    private void OpenModule(ModuleVm m)
+    private void GoToModule(ModuleVm m)
     {
         NavState.SetModule(m.Id, m.Title);
         Nav.NavigateTo($"/student/course/module/{m.Id}");
     }
-}
 
+    private void GoToEditModule(ModuleVm m, MouseEventArgs e)
+    {
+        // Exempel: navigera till edit-page
+        Nav.NavigateTo($"/teacher/course/module/{m.Id}/edit");
+    }
+
+    private record ModuleVm(int Id, string Title, string Description, DateTime StartDate, DateTime EndDate);
+}
