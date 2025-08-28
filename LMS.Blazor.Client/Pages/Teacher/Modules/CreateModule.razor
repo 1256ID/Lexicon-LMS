@@ -1,0 +1,150 @@
+﻿@page "/teacher/courses/{CourseId:int}/modules/new"
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+
+@using LMS.Blazor.Client.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Teacher")]
+
+<PageTitle>Create New Module</PageTitle>
+
+<div class="content">
+    <!-- Breadcrumb with course name -->
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses" class="text-decoration-none">
+                    <i class="bi bi-book me-1"></i>Courses
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses/@CourseId" class="text-decoration-none">
+                    @courseName
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Create New Module</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            <!-- CREATE MODE: No initial values, fields are empty -->
+            <ModuleForm HeaderTitle="Create New Module"
+                       SubmitButtonText="Create Module"
+                       ShowDeleteButton="false"
+                       OnCancel="@HandleCancel"
+                       OnSubmit="@HandleSubmit" />
+            
+            <!-- With Module model:
+            <ModuleForm Module="@newModule"
+                       OnValidSubmit="@HandleSubmit"
+                       OnCancel="@HandleCancel"
+                       HeaderTitle="Create New Module"
+                       HeaderIcon="bi-plus-circle"
+                       SubmitButtonText="Create Module"
+                       SubmitIcon="bi-plus-lg"
+                       ShowDeleteButton="false"
+                       ErrorMessage="@errorMessage"
+                       SuccessMessage="@successMessage"
+                       IsSubmitting="@isSubmitting" />
+            -->
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    
+    private string courseName = "Sample Course"; // Will be loaded from API later
+    
+    // ===== TEMPORARY VARIABLES =====
+    // With Module model, uncomment:
+    // private Module newModule = new() { CourseId = CourseId, StartDate = DateTime.Today, EndDate = DateTime.Today.AddWeeks(2) };
+    // private bool isSubmitting = false;
+    // private string errorMessage = string.Empty;
+    // private string successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCourseName();
+    }
+
+    private async Task LoadCourseName()
+    {
+        // TEMPORARY - Later replace with real API call:
+        await Task.Delay(100);
+        courseName = "Introduction to UI/UX Design"; // Mock data
+        
+        // WITH API - Uncomment later:
+        /*
+        try
+        {
+            var response = await HttpClient.GetAsync($"api/courses/{CourseId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var course = await response.Content.ReadFromJsonAsync<Course>();
+                courseName = course.Name;
+            }
+        }
+        catch (Exception)
+        {
+            courseName = "Course";
+        }
+        */
+    }
+
+    private void HandleSubmit()
+    {
+        Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules");
+        
+        // WITH API - Uncomment later:
+        /*
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
+            // Validate dates
+            if (newModule.EndDate <= newModule.StartDate)
+            {
+                errorMessage = "End date must be after start date";
+                return;
+            }
+
+            // API call to create module
+            var response = await HttpClient.PostAsJsonAsync("api/modules", newModule);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var createdModule = await response.Content.ReadFromJsonAsync<Module>();
+                successMessage = "Module created successfully!";
+                await Task.Delay(1500);
+                Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to create module: {errorContent}";
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Network error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+        */
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules");
+    }
+}

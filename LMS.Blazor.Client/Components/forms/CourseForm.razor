@@ -1,0 +1,172 @@
+﻿<!-- When we have your Course model:
+<EditForm Model="@Course" OnValidSubmit="@HandleValidSubmit" class="needs-validation" novalidate>
+    <DataAnnotationsValidator />
+-->
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light border-0 p-4">
+        <h5 class="fw-bold mb-0 text-primary">
+            <i class="bi bi-book me-2"></i>@HeaderTitle
+        </h5>
+    </div>
+    <div class="card-body p-4">
+        <div class="row">
+            <div class="col-12 mb-3">
+                <div class="form-floating">
+                    <input @bind="courseName" class="form-control" id="courseName" name="courseName" placeholder="Course Name" />
+                    <!-- With model: <InputText @bind-Value="Course.Name" class="form-control" id="courseName" placeholder="Course Name" /> -->
+                    <label for="courseName">Course Name *</label>
+                    <!-- With model: <ValidationMessage For="@(() => Course.Name)" class="text-danger small" /> -->
+                </div>
+            </div>
+
+            <div class="col-12 mb-3">
+                <div class="form-floating">
+                    <textarea @bind="courseDescription" class="form-control course-description" id="courseDescription" name="courseDescription"
+                              placeholder="Course Description" style="height: 180px; min-height: 180px; resize: vertical;"></textarea>
+                    <!-- With model: <InputTextArea @bind-Value="Course.Description" class="form-control course-description" id="courseDescription" placeholder="Course Description" /> -->
+                    <label for="courseDescription">Course Description *</label>
+                    <!-- With model: <ValidationMessage For="@(() => Course.Description)" class="text-danger small" /> -->
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <input @bind="startDate" type="date" class="form-control" id="startDate" name="startDate" />
+                    <!-- With model: <InputDate @bind-Value="Course.StartDate" class="form-control" id="startDate" /> -->
+                    <label for="startDate">Start Date *</label>
+                    <!-- With model: <ValidationMessage For="@(() => Course.StartDate)" class="text-danger small" /> -->
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success mt-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@successMessage
+            </div>
+        }
+    </div>
+
+    <div class="card-footer bg-light border-0 p-4">
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" @onclick="HandleCancel">
+                <i class="bi bi-arrow-left me-2"></i>Cancel
+            </button>
+            <div>
+                @if (ShowDeleteButton)
+                {
+                    <button type="button" class="btn btn-outline-danger me-2" @onclick="HandleDelete">
+                        <i class="bi bi-trash me-2"></i>Delete
+                    </button>
+                }
+                <button type="button" class="btn btn-primary" @onclick="HandleSubmit" disabled="@isSubmitting">
+                    <!-- With model: <button type="submit" class="btn btn-primary" disabled="@isSubmitting"> -->
+                    @if (isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-lg me-2"></i>
+                    }
+                    @SubmitButtonText
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Close EditForm when we have our model:
+</EditForm>
+-->
+@code {
+    // ===== COMPONENT PARAMETERS =====
+    [Parameter] public string HeaderTitle { get; set; } = "Course Information";
+    [Parameter] public string SubmitButtonText { get; set; } = "Save Course";
+    [Parameter] public bool ShowDeleteButton { get; set; } = false;
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+
+    // ===== PARAMETERS FOR PRE-FILLING (simulation for edit mode) =====
+    [Parameter] public string? InitialCourseName { get; set; }
+    [Parameter] public string? InitialDescription { get; set; }
+    [Parameter] public DateTime? InitialStartDate { get; set; }
+
+    // ===== FORM VARIABLES =====
+    private string courseName = "";
+    private string courseDescription = "";
+    private DateTime startDate = DateTime.Today;
+
+    // With Course model, replace with:
+    // [Parameter] public Course Course { get; set; } = new();
+    // [Parameter] public EventCallback<Course> OnValidSubmit { get; set; }
+
+    // ===== STATE VARIABLES =====
+    private bool isSubmitting = false;
+    private string errorMessage = "";
+    private string successMessage = "";
+
+    // ===== INITIALIZATION =====
+    protected override void OnInitialized()
+    {
+        // Pre-fill with initial values if provided (for edit mode simulation)
+        if (!string.IsNullOrEmpty(InitialCourseName))
+            courseName = InitialCourseName;
+
+        if (!string.IsNullOrEmpty(InitialDescription))
+            courseDescription = InitialDescription;
+
+        if (InitialStartDate.HasValue)
+            startDate = InitialStartDate.Value;
+
+    }
+
+    // ===== FORM METHODS =====
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+
+        // Manual validation (with model this will be automatic)
+        if (string.IsNullOrWhiteSpace(courseName))
+        {
+            errorMessage = "Course name is required";
+            isSubmitting = false;
+            return;
+        }
+
+        errorMessage = "";
+
+        // Simulate API call
+        await Task.Delay(1500);
+
+        successMessage = "Course saved successfully!";
+        await OnSubmit.InvokeAsync();
+
+        isSubmitting = false;
+    }
+
+    // With Course model, replace with:
+    // private async Task HandleValidSubmit()
+    // {
+    //     await OnValidSubmit.InvokeAsync(Course);
+    // }
+
+    private async Task HandleCancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task HandleDelete()
+    {
+        await OnDelete.InvokeAsync();
+    }
+}
