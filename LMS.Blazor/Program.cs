@@ -31,6 +31,9 @@ builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAu
 builder.Services.AddScoped<IApiService, ServerNoopApiService>();
 builder.Services.AddScoped<IAuthReadyService, ServerNoopAuthReadyService>();
 
+builder.Services.AddSingleton<NavigationStateService>();
+
+
 // Authentication setup
 builder.Services.AddAuthentication(options =>
 {
@@ -95,6 +98,8 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(LMS.Blazor.Client._Imports).Assembly);
+
+app.MapFallbackToFile("index.html");
 
 app.MapControllers();
 

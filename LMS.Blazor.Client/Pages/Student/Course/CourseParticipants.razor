@@ -1,0 +1,13 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveWebAssembly
+@attribute [Authorize(Roles = "Student")]
+
+<div class="card">
+    <div class="card-header">Participants</div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">Teacher: Jane Doe</li>
+        <li class="list-group-item">Student: John Smith</li>
+        <li class="list-group-item">Student: Anna Andersson</li>
+    </ul>
+</div>
+
