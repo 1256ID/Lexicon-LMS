@@ -1,34 +1,51 @@
 ﻿@page "/teacher/courses"
+@rendermode InteractiveWebAssembly
 @using LMS.Blazor.Client.Services
+@using Microsoft.AspNetCore.Authorization
 @inject NavigationManager Nav
 @inject NavigationStateService NavState
 
-<div class="row">
-    @foreach (var m in CoursesList)
-    {
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-            <div class="card h-100 shadow-sm hover-card" style="border-radius: 0.8rem; transition: all 0.3s ease;">
-                <!-- Card Content (clickable area) -->
-                <div class="card-body d-flex flex-column p-4" style="cursor: pointer;"
-                     @onclick="() => OpenCourse(m.Id)">
-                    <h5 class="card-title fw-bold mb-3 border-bottom pb-2" style="color: #1b6ec2;">
-                        @m.Title
-                    </h5>
-                    <p class="card-text flex-grow-1" style="min-height: 60px; overflow: hidden;">
-                        @m.Description
-                    </p>
-                    <div class="mt-auto pt-3">
-                        <div class="bg-light rounded p-2 position-relative">
-                            <small class="text-muted">
-                                <strong>📅 Start:</strong> @m.StartDate<br>
-                                <strong>🏁 End:</strong> @m.EndDate
-                            </small>
+@attribute [Authorize(Roles = "Teacher")]
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+
+            <!-- Header -->
+            <div class="mb-5">
+                <h2 class="fw-bold text-primary">Courses</h2>
+                <p class="text-muted">Browse and manage all your courses.</p>
+            </div>
+
+            <div class="row">
+                @foreach (var c in CoursesList)
+                {
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                        <div class="card h-100 shadow-sm hover-card" style="border-radius: 0.8rem; transition: all 0.3s ease;">
+                            <div class="card-body d-flex flex-column p-4" style="cursor: pointer;" @onclick="() => OpenCourse(c)">
+                                <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-primary">@c.Title</h5>
+                                <p class="card-text flex-grow-1">@c.Description</p>
+                                <div class="mt-auto pt-3">
+                                    <div class="bg-light rounded p-2 position-relative">
+                                        <small class="text-muted">
+                                            <strong>📅 Start:</strong> @c.StartDate.ToShortDateString()<br />
+                                            <strong>🏁 End:</strong> @c.EndDate.ToShortDateString()
+                                        </small>
+                                        <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2"
+                                                @onclick="(e) => EditCourse(c.Id)"
+                                                @onclick:stopPropagation="true">
+                                            <span class="bi bi-pencil"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                }
             </div>
+
         </div>
-    }
+    </div>
 </div>
 
 @code {
@@ -37,27 +54,25 @@
     private List<CourseVm> CoursesList = new()
     {
         new(1, "C# Fundamentals", "Learn the basics of C#", DateTime.Parse("2025-08-14"), DateTime.Parse("2025-09-05")),
-        new(2, "Web Development", "Front-end and back-end development", DateTime.Parse("2025-09-08"), DateTime.Parse("2025-10-01")),
-        new(3, "Data Science", "Data analysis and machine learning", DateTime.Parse("2025-10-05"), DateTime.Parse("2025-10-29"))
+        new(2, "Web Development", "Front-end and back-end dev", DateTime.Parse("2025-09-08"), DateTime.Parse("2025-10-01")),
+        new(3, "Data Science", "Analysis and machine learning", DateTime.Parse("2025-10-05"), DateTime.Parse("2025-10-29"))
     };
 
-    // private void OpenModule(ModuleVm m)
-    // {
-    //     NavState.SetModule(m.Id, m.Title);
-    //     Nav.NavigateTo($"/student/course/module/{m.Id}");
-    // }
+    private void OpenCourse(CourseVm c)
+    {
+        NavState.SetCourse(c.Id, c.Title);
+        Nav.NavigateTo($"/teacher/course/{c.Id}");
+    }
 
-    private void OpenCourse(int id) => Nav.NavigateTo($"/teacher/course/{id}");
+    private void EditCourse(int id)
+    {
+        Nav.NavigateTo($"/teacher/course/edit/{id}");
+    }
 
-    // private void CreateNew() => Nav.NavigateTo("/teacher/course/create");
-
-    // private void EditCourse(int id) => Nav.NavigateTo($"/teacher/course/edit/{id}");
-
-    // private async Task DeleteCourse(int id)
-    // {
-    //     await Http.DeleteAsync($"/api/courses/{id}");
-    //     Courses.RemoveAll(c => c.Id == id);
-    // }
+    protected override void OnInitialized()
+    {
+        NavState.ClearCourse();
+        NavState.ClearModule();
+        NavState.ClearActivity();
+    }
 }
-
-

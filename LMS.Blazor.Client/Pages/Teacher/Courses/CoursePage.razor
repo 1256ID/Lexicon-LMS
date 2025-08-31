@@ -1,59 +1,45 @@
-﻿@page "/student/course"
+﻿@page "/teacher/course/{CourseId:int}"
 @rendermode InteractiveWebAssembly
 @using LMS.Blazor.Client.Services
+
 @using Microsoft.AspNetCore.Authorization
 @inject NavigationStateService NavState
 
-@attribute [Authorize(Roles = "Student")]
+@attribute [Authorize(Roles = "Teacher")]
 
 <div class="container mt-5">
     <div class="row">
         <div class="col-lg-10 mx-auto">
 
-            <!-- Course Header -->
             <div class="mb-4">
-                <h2 class="fw-bold text-primary">Beginner’s Guide to Mastering UI/UX Design</h2>
+                <h2 class="fw-bold text-primary">@CourseName</h2>
                 <p class="text-muted">
                     <i class="bi bi-calendar-event me-2 text-secondary"></i>
                     Start: 2025/08/14
                 </p>
             </div>
 
-            <!-- Tabs (Always Visible) -->
             <div class="d-flex gap-2 flex-wrap justify-content-center mb-5">
-                <button class="btn btn-outline-primary @(SelectedTab == Tab.Modules ? "active" : "")"
-                        @onclick="() => SelectTab(Tab.Modules)">
-                    Modules
-                </button>
-                <button class="btn btn-outline-primary @(SelectedTab == Tab.Documents ? "active" : "")"
-                        @onclick="() => SelectTab(Tab.Documents)">
-                    Documents
-                </button>
-                <button class="btn btn-outline-primary @(SelectedTab == Tab.Participants ? "active" : "")"
-                        @onclick="() => SelectTab(Tab.Participants)">
-                    Participants
-                </button>
-                <button class="btn btn-outline-primary @(SelectedTab == Tab.Schedule ? "active" : "")"
-                        @onclick="() => SelectTab(Tab.Schedule)">
-                    Schedule
-                </button>
+                <button class="btn btn-outline-primary @(SelectedTab == Tab.Modules ? "active" : "")" @onclick="() => SelectTab(Tab.Modules)">Modules</button>
+                <button class="btn btn-outline-primary @(SelectedTab == Tab.Documents ? "active" : "")" @onclick="() => SelectTab(Tab.Documents)">Documents</button>
+                <button class="btn btn-outline-primary @(SelectedTab == Tab.Participants ? "active" : "")" @onclick="() => SelectTab(Tab.Participants)">Participants</button>
+                <button class="btn btn-outline-primary @(SelectedTab == Tab.Schedule ? "active" : "")" @onclick="() => SelectTab(Tab.Schedule)">Schedule</button>
             </div>
 
-            <!-- Tab Content (Conditional Rendering) -->
             <div class="tab-content">
                 @switch (SelectedTab)
                 {
                     case Tab.Modules:
-                        <CourseModules />
+                        <CourseModules CourseId="@CourseId" />
                         break;
                     case Tab.Documents:
-                        <CourseDocuments />
+                        <CourseDocuments CourseId="@CourseId" />
                         break;
                     case Tab.Participants:
-                        <CourseParticipants />
+                        <CourseParticipants CourseId="@CourseId" />
                         break;
                     case Tab.Schedule:
-                        <CourseSchedule />
+                        <CourseSchedule CourseId="@CourseId" />
                         break;
                 }
             </div>
@@ -63,17 +49,19 @@
 </div>
 
 @code {
+    [Parameter] public int CourseId { get; set; }
     private enum Tab { Modules, Documents, Participants, Schedule }
+    private Tab SelectedTab = Tab.Modules;
 
-    private Tab SelectedTab = Tab.Modules; // default tab
+    private string CourseName => NavState.CurrentCourseName ?? $"Course {CourseId}";
 
-    private void SelectTab(Tab tab)
-    {
-        SelectedTab = tab;
-    }
+    private void SelectTab(Tab tab) => SelectedTab = tab;
 
     protected override void OnInitialized()
     {
+        NavState.SetCourse(CourseId, CourseName);
         NavState.ClearModule();
+        NavState.ClearActivity();
     }
 }
+

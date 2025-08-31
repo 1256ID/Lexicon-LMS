@@ -1,11 +1,15 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveWebAssembly
 @attribute [Authorize(Roles = "Teacher")]
+@inject NavigationManager Nav
+
+
+<h3>Documents for Module @moduleId</h3>
 
 <div class="row g-3">
     <div class="col-md-3">
         <div class="card">
-            <div class="card-header">Course Documents</div>
+            <div class="card-header">Module Documents</div>
             <ul class="list-group list-group-flush">
                 @foreach (var d in Docs)
                 {
@@ -38,17 +42,40 @@
 </div>
 
 @code {
-    [Parameter] public int CourseId { get; set; }
+    [Parameter] public int moduleId { get; set; }
+
     private record DocVm(int Id, string Title, string FileName);
-    private List<DocVm> Docs = new()
-    {
-        new(10, "Syllabus", "course-syllabus.pdf"),
-        new(11, "Setup Guide", "setup.md"),
-        new(12, "Project Brief", "project.pdf")
-    };
+
+    // Just testdata – i verkligheten hämtar du dokument från API/db baserat på moduleId
+    private List<DocVm> Docs = new();
 
     private DocVm? SelectedDoc;
 
+    protected override void OnInitialized()
+    {
+        // Dummy docs per modul
+        Docs = moduleId switch
+        {
+            1 => new()
+            {
+                new(10, "Intro Syllabus", "intro-syllabus.pdf"),
+                new(11, "Welcome Guide", "welcome.md")
+            },
+            2 => new()
+            {
+                new(20, "C# Basics Notes", "csharp-basics.pdf"),
+                new(21, "Exercises", "csharp-exercises.docx")
+            },
+            3 => new()
+            {
+                new(30, "Web API Guide", "webapi.pdf"),
+                new(31, "Postman Collection", "api-collection.json")
+            },
+            _ => new()
+        };
+    }
+
     private void Select(int id) => SelectedDoc = Docs.First(x => x.Id == id);
 }
+
 

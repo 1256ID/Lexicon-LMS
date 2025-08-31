@@ -1,11 +1,11 @@
-﻿@using Microsoft.AspNetCore.Authorization
-@rendermode InteractiveWebAssembly
-@attribute [Authorize(Roles = "Teacher")]
+﻿@using LMS.Blazor.Client.Services
+
+<h3>Documents for Activity @ActivityId</h3>
 
 <div class="row g-3">
     <div class="col-md-3">
         <div class="card">
-            <div class="card-header">Course Documents</div>
+            <div class="card-header">Activity Documents</div>
             <ul class="list-group list-group-flush">
                 @foreach (var d in Docs)
                 {
@@ -38,17 +38,35 @@
 </div>
 
 @code {
-    [Parameter] public int CourseId { get; set; }
-    private record DocVm(int Id, string Title, string FileName);
-    private List<DocVm> Docs = new()
-    {
-        new(10, "Syllabus", "course-syllabus.pdf"),
-        new(11, "Setup Guide", "setup.md"),
-        new(12, "Project Brief", "project.pdf")
-    };
+    [Parameter] public int ModuleId { get; set; }
+    [Parameter] public int ActivityId { get; set; }
 
+    private record DocVm(int Id, string Title, string FileName);
+    private List<DocVm> Docs = new();
     private DocVm? SelectedDoc;
+
+    protected override void OnParametersSet()
+    {
+        Docs = ActivityId switch
+        {
+            1 => new()
+            {
+                new(101, "Intro Video Notes", "intro-notes.pdf"),
+                new(102, "Intro Quiz", "intro-quiz.pdf")
+            },
+            2 => new()
+            {
+                new(201, "Quiz 1 Notes", "quiz1-notes.pdf"),
+                new(202, "Exercise Sheet", "exercise1.docx")
+            },
+            3 => new()
+            {
+                new(301, "Assignment Instructions", "assignment.pdf"),
+                new(302, "Example Solution", "solution.docx")
+            },
+            _ => new()
+        };
+    }
 
     private void Select(int id) => SelectedDoc = Docs.First(x => x.Id == id);
 }
-
