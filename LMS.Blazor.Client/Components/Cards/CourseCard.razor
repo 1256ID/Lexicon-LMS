@@ -1,83 +1,36 @@
-﻿@* @page "/teacher/courses" *@
-@using LMS.Blazor.Client.Services
+﻿@using LMS.Blazor.Client.Models
 @inject NavigationManager Nav
 @inject NavigationStateService NavState
+@using Microsoft.AspNetCore.Authorization
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
+<div class="card h-100 shadow-sm hover-card course-card">
+    <div class="card-body d-flex flex-column p-4 card-content" @onclick="() => OnOpen.InvokeAsync(Course)">
+        <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-primary">@Course.Title</h5>
+        <p class="card-text flex-grow-1">@Course.Description</p>
+        <div class="mt-auto pt-3">
+            <div class="bg-light rounded p-2 position-relative">
+                <small class="text-muted">
+                    <strong>📅 Start:</strong> @Course.StartDate.ToShortDateString()<br />
+                    <strong>🏁 End:</strong> @Course.EndDate.ToShortDateString()
+                </small>
 
-            <!-- Courses Header -->
-            <div class="mb-5 text-center">
-                <h2 class="fw-bold text-primary">Available Courses</h2>
-                <p class="text-muted">Browse, manage and edit your courses</p>
+                <AuthorizeView Roles="Teacher">
+                    <Authorized>
+                        <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2 edit-btn"
+                                @onclick="@(e => OnEdit.InvokeAsync(Course.Id))"
+                                @onclick:stopPropagation="true"
+                                title="Edit Course">
+                            <span class="bi-pencil"></span>
+                        </button>
+                    </Authorized>
+                </AuthorizeView>
             </div>
-
-            <div class="row">
-                @foreach (var c in CoursesList)
-                {
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-                        <div class="card h-100 shadow-sm hover-card course-card">
-                            <!-- Card Content (clickable area) -->
-                            <div class="card-body d-flex flex-column p-4 card-content"
-                                 @onclick="() => OpenCourse(c)">
-                                <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-primary">
-                                    @c.Title
-                                </h5>
-                                <p class="card-text flex-grow-1 card-content">
-                                    @c.Description
-                                </p>
-                                <div class="mt-auto pt-3">
-                                    <div class="bg-light rounded p-2 position-relative">
-                                        <small class="text-muted">
-                                            <strong>📅 Start:</strong> @c.StartDate.ToShortDateString()<br />
-                                            <strong>🏁 End:</strong> @c.EndDate.ToShortDateString()
-                                        </small>
-
-                                        <!-- Edit Icon for Teachers -->
-                                        <AuthorizeView Roles="Teacher">
-                                            <Authorized>
-                                                <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2 edit-btn"
-                                                        @onclick="@(e => EditCourse(c.Id))"
-                                                        @onclick:stopPropagation="true"
-                                                        title="Edit Course">
-                                                    <span class="bi-pencil"></span>
-                                                </button>
-                                            </Authorized>
-                                        </AuthorizeView>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-
         </div>
     </div>
 </div>
 
 @code {
-    private record CourseVm(int Id, string Title, string Description, DateTime StartDate, DateTime EndDate);
-
-    private List<CourseVm> CoursesList = new()
-    {
-        new(1, "C# Fundamentals", "Learn the basics of C#", DateTime.Parse("2025-08-14"), DateTime.Parse("2025-09-05")),
-        new(2, "Web Development", "Front-end and back-end development", DateTime.Parse("2025-09-08"), DateTime.Parse("2025-10-01")),
-        new(3, "Data Science", "Data analysis and machine learning", DateTime.Parse("2025-10-05"), DateTime.Parse("2025-10-29"))
-    };
-
-    private void OpenCourse(CourseVm c)
-    {
-        // spara i NavState för navigation menu
-        NavState.ClearModule();
-        NavState.ClearActivity();
-
-        Nav.NavigateTo($"/teacher/course/{c.Id}");
-    }
-
-    private void EditCourse(int id)
-    {
-        Nav.NavigateTo($"/teacher/course/edit/{id}");
-    }
+    [Parameter] public CourseVM Course { get; set; } = default!;
+    [Parameter] public EventCallback<CourseVM> OnOpen { get; set; }
+    [Parameter] public EventCallback<int> OnEdit { get; set; }
 }

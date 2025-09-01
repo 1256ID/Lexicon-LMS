@@ -1,49 +1,42 @@
-﻿@inject NavigationManager Navigation
+﻿@using LMS.Blazor.Client.Models
+@inject NavigationManager Nav
+@inject NavigationStateService NavState
+@using Microsoft.AspNetCore.Authorization
 
-<div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-    <div class="card h-100 shadow-sm hover-card activity-card">
-        <!-- Card Content (clickable area) -->
-        <div class="card-body d-flex flex-column p-4 card-content" @onclick="OpenActivity">
-            <h6 class="card-subtitle mb-2 text-muted">Activity Type</h6> <!-- @Activity.Type -->
-            <h5 class="card-title fw-bold mb-3 border-bottom pb-2 activity-text-purple">
-                Activity Name <!-- @Activity.Name -->
-            </h5>
-            <p class="card-text flex-grow-1 card-content">
-                Activity Description <!-- @Activity.Description -->
-            </p>
-            <div class="mt-auto pt-3">
-                <div class="bg-light rounded p-2 position-relative">
-                    <small class="text-muted">
-                        <strong>📅 Start:</strong> YYYY/MM/DD<br>
-                        <strong>🏁 End:</strong> YYYY/MM/DD
-                    </small>
-                    <!-- Edit Icon for Teachers - Bottom Right -->
-                    <AuthorizeView Roles="Teacher">
-                        <Authorized>
-                            <button class="btn btn-sm activity-btn-purple position-absolute top-50 end-0 translate-middle-y me-2 edit-btn"
-                                    @onclick="GoToEditActivity"
-                                    @onclick:stopPropagation="true"
-                                    title="Edit Activity">
-                                <span class="bi-pencil-edit"></span>
-                            </button>
-                        </Authorized>
-                    </AuthorizeView>
-                </div>
+<div class="card h-100 shadow-sm hover-card course-card">
+    <div class="card-body d-flex flex-column p-4 card-content" @onclick="() => OnOpen.InvokeAsync(Activity)">
+        <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-primary">@Activity.Title</h5>
+        <p class="card-text flex-grow-1">@Activity.Description</p>
+        <div class="mt-auto pt-3">
+            <div class="bg-light rounded p-2 position-relative">
+                <small class="text-muted">
+                    <strong>📅 Start:</strong> @Activity.StartDate.ToShortDateString()<br />
+                    <strong>🏁 End:</strong> @Activity.EndDate.ToShortDateString()
+                </small>
+
+                <AuthorizeView Roles="Teacher">
+                    <Authorized>
+                        <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2 edit-btn"
+                                @onclick="@(e => OnEdit.InvokeAsync(Activity.Id))"
+                                @onclick:stopPropagation="true"
+                                title="Edit Course">
+                            <span class="bi-pencil"></span>
+                        </button>
+                    </Authorized>
+                </AuthorizeView>
             </div>
         </div>
     </div>
 </div>
 
 @code {
-    // [Parameter] public Activity Activity { get; set; }
-
-    private void OpenActivity()
-    {
-        // Navigation.NavigateTo($"/activity/{Activity.Id}");
-    }
-
-    private void GoToEditActivity()
-    {
-        // Navigation.NavigateTo($"/edit-activity/{Activity.Id}");
-    }
+    [Parameter] public ActivityVM Activity { get; set; } = default!;
+    [Parameter] public EventCallback<ActivityVM> OnOpen { get; set; }
+    [Parameter] public EventCallback<int> OnEdit { get; set; }
 }
+
+
+
+
+
+
