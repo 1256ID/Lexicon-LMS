@@ -1,10 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Authorization
-@using System.Text.Json
+@using LMS.Blazor.Client.Services.Interfaces
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @rendermode InteractiveWebAssembly
-@inject HttpClient HttpClient
+@inject IParticipantsService ParticipantsService
 @attribute [Authorize(Roles = "Student")]
 
-<div class="card shadow-sm">
+<div class="card shadow-sm mb-4">
     <div class="card-header bg-light border-0 p-4">
         <h5 class="fw-bold mb-0 text-primary">
             <i class="bi bi-people me-2"></i>Course Participants
@@ -43,33 +45,36 @@
             }
 
             <!-- Students Section -->
-            <div class="border-bottom bg-light px-4 py-2">
-                <small class="text-muted fw-bold">CLASSMATES (@(students.Count() - 1))</small>
-            </div>
-
-            @foreach (var student in students)
+            @if (students.Any())
             {
-                <div class="px-4 py-3 @(student != students.Last() ? "border-bottom" : "")">
-                    <div class="d-flex align-items-center">
-                        <div class="@(student.IsCurrentUser ? "bg-warning" : "bg-success") rounded-circle d-flex align-items-center justify-content-center me-3"
-                             style="width: 40px; height: 40px;">
-                            <i class="bi bi-person-fill text-white"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">
-                                @student.Name
-                                @if (student.IsCurrentUser)
-                                {
-                                    <small class="text-muted">(You)</small>
-                                }
-                            </h6>
-                            <small class="text-muted">@student.Email</small>
-                        </div>
-                        <span class="badge @(student.IsCurrentUser ? "bg-warning" : "bg-light text-dark")">
-                            @(student.IsCurrentUser ? "You" : "Student")
-                        </span>
-                    </div>
+                <div class="border-bottom bg-light px-4 py-2">
+                    <small class="text-muted fw-bold">CLASSMATES (@(students.Count() - 1))</small>
                 </div>
+
+                @foreach (var student in students.OrderBy(s => s.IsCurrentUser ? 0 : 1).ThenBy(s => s.Name))
+                {
+                    <div class="px-4 py-3 @(student != students.Last() ? "border-bottom" : "")">
+                        <div class="d-flex align-items-center">
+                            <div class="@(student.IsCurrentUser ? "bg-warning" : "bg-success") rounded-circle d-flex align-items-center justify-content-center me-3"
+                                 style="width: 40px; height: 40px;">
+                                <i class="bi bi-person-fill text-white"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">
+                                    @student.Name
+                                    @if (student.IsCurrentUser)
+                                    {
+                                        <small class="text-muted">(You)</small>
+                                    }
+                                </h6>
+                                <small class="text-muted">@student.Email</small>
+                            </div>
+                            <span class="badge @(student.IsCurrentUser ? "bg-warning" : "bg-light text-dark")">
+                                @(student.IsCurrentUser ? "You" : "Student")
+                            </span>
+                        </div>
+                    </div>
+                }
             }
         }
         else
@@ -99,12 +104,38 @@
 
     private List<ParticipantDto> participants = new();
     private ParticipantDto? teacher;
-    private IEnumerable<ParticipantDto> students => participants.Where(p => p.Role == "Student");
+    private IEnumerable<StudentParticipantDto> students =>
+        participants.Where(p => p.Role == "Student")
+                   .Select(p => new StudentParticipantDto
+                   {
+                       Id = p.Id,
+                       Name = p.Name,
+                       Email = p.Email,
+                       IsCurrentUser = p.Id == CurrentUserId
+                   });
+
     private bool isLoading = true;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        await GetCurrentUser();
         await LoadParticipants();
+    }
+
+    private async Task GetCurrentUser()
+    {
+        if (AuthenticationStateTask != null)
+        {
+            var authState = await AuthenticationStateTask;
+            var userIdClaim = authState.User.FindFirst("sub") ?? authState.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+            {
+                CurrentUserId = userId;
+            }
+        }
     }
 
     private async Task LoadParticipants()
@@ -112,25 +143,8 @@
         try
         {
             isLoading = true;
-            var response = await HttpClient.GetAsync($"/api/courses/{CourseId}/participants");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                var participantList = JsonSerializer.Deserialize<List<ParticipantDto>>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                }) ?? new();
-
-                // Mark current user and sort students (current user first)
-                foreach (var participant in participantList)
-                {
-                    participant.IsCurrentUser = participant.Id == CurrentUserId;
-                }
-
-                participants = participantList;
-                teacher = participants.FirstOrDefault(p => p.Role == "Teacher");
-            }
+            participants = await ParticipantsService.GetCourseParticipantsAsync(CourseId);
+            teacher = participants.FirstOrDefault(p => p.Role == "Teacher");
         }
         catch (Exception ex)
         {
@@ -143,14 +157,13 @@
         }
     }
 
-    // DTO Classes
-    public class ParticipantDto
+    // DTO local
+    public class StudentParticipantDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Email { get; set; } = "";
-        public string Role { get; set; } = "";
-        public string? StudentNumber { get; set; }
         public bool IsCurrentUser { get; set; }
     }
+
 }

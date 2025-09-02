@@ -99,6 +99,17 @@
             </div>
         }
     </div>
+
+    <!-- Course Stats Footer -->
+    @if (participants != null && participants.Any())
+    {
+        <div class="card-footer bg-light text-center">
+            <small class="text-muted">
+                <i class="bi bi-people-fill me-1"></i>
+                Total: @participants.Count participants (@students.Count() students, 1 instructor)
+            </small>
+        </div>
+    }
 </div>
 
 <!-- Add Student Modal -->
@@ -174,6 +185,7 @@
             </div>
         </div>
     </div>
+}
 
 
 @code {
@@ -320,20 +332,5 @@
         availableStudents.Clear();
     }
 
-    // DTOs
-    public class ParticipantDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string Role { get; set; } = "";
-    }
-
-    public class AvailableStudentDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Email { get; set; } = "";
-    }
-}
+    
 }
