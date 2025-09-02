@@ -1,0 +1,156 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using System.Text.Json
+@rendermode InteractiveWebAssembly
+@inject HttpClient HttpClient
+@attribute [Authorize(Roles = "Student")]
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light border-0 p-4">
+        <h5 class="fw-bold mb-0 text-primary">
+            <i class="bi bi-people me-2"></i>Course Participants
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        @if (isLoading)
+        {
+            <div class="text-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else if (participants != null && participants.Any())
+        {
+            <!-- Teacher Section -->
+            @if (teacher != null)
+            {
+                <div class="border-bottom bg-light px-4 py-2">
+                    <small class="text-muted fw-bold">INSTRUCTOR</small>
+                </div>
+                <div class="px-4 py-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-fill text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">@teacher.Name</h6>
+                            <small class="text-muted">@teacher.Email</small>
+                        </div>
+                        <span class="badge bg-primary ms-auto">Instructor</span>
+                    </div>
+                </div>
+            }
+
+            <!-- Students Section -->
+            <div class="border-bottom bg-light px-4 py-2">
+                <small class="text-muted fw-bold">CLASSMATES (@(students.Count() - 1))</small>
+            </div>
+
+            @foreach (var student in students)
+            {
+                <div class="px-4 py-3 @(student != students.Last() ? "border-bottom" : "")">
+                    <div class="d-flex align-items-center">
+                        <div class="@(student.IsCurrentUser ? "bg-warning" : "bg-success") rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-fill text-white"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">
+                                @student.Name
+                                @if (student.IsCurrentUser)
+                                {
+                                    <small class="text-muted">(You)</small>
+                                }
+                            </h6>
+                            <small class="text-muted">@student.Email</small>
+                        </div>
+                        <span class="badge @(student.IsCurrentUser ? "bg-warning" : "bg-light text-dark")">
+                            @(student.IsCurrentUser ? "You" : "Student")
+                        </span>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center text-muted p-4">
+                <i class="bi bi-people fs-1 mb-2"></i>
+                <p class="mb-0">No participants in this course</p>
+            </div>
+        }
+    </div>
+
+    <!-- Course Stats Footer -->
+    @if (participants != null && participants.Any())
+    {
+        <div class="card-footer bg-light text-center">
+            <small class="text-muted">
+                <i class="bi bi-people-fill me-1"></i>
+                Total: @participants.Count participants (@students.Count() students, 1 instructor)
+            </small>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    [Parameter] public int CurrentUserId { get; set; }
+
+    private List<ParticipantDto> participants = new();
+    private ParticipantDto? teacher;
+    private IEnumerable<ParticipantDto> students => participants.Where(p => p.Role == "Student");
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadParticipants();
+    }
+
+    private async Task LoadParticipants()
+    {
+        try
+        {
+            isLoading = true;
+            var response = await HttpClient.GetAsync($"/api/courses/{CourseId}/participants");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var participantList = JsonSerializer.Deserialize<List<ParticipantDto>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }) ?? new();
+
+                // Mark current user and sort students (current user first)
+                foreach (var participant in participantList)
+                {
+                    participant.IsCurrentUser = participant.Id == CurrentUserId;
+                }
+
+                participants = participantList;
+                teacher = participants.FirstOrDefault(p => p.Role == "Teacher");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading participants: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    // DTO Classes
+    public class ParticipantDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Role { get; set; } = "";
+        public string? StudentNumber { get; set; }
+        public bool IsCurrentUser { get; set; }
+    }
+}

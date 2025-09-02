@@ -3,6 +3,7 @@
 @using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Services
 @using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Components.Participants
 @inject ICourseService CourseService
 @using Microsoft.AspNetCore.Authorization
 @inject NavigationStateService NavState
@@ -38,7 +39,7 @@
                         <CourseDocuments CourseId="@CourseId" />
                         break;
                     case Tab.Participants:
-                        <CourseParticipants CourseId="@CourseId" />
+                        <CourseParticipantsTeacher CourseId="@CourseId" />
                         break;
                     case Tab.Schedule:
                         <CourseSchedule CourseId="@CourseId" />
