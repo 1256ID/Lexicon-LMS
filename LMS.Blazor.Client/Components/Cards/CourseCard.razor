@@ -1,0 +1,36 @@
+﻿@using LMS.Blazor.Client.Models
+@inject NavigationManager Nav
+@inject NavigationStateService NavState
+@using Microsoft.AspNetCore.Authorization
+
+<div class="card h-100 shadow-sm hover-card course-card">
+    <div class="card-body d-flex flex-column p-4 card-content" @onclick="() => OnOpen.InvokeAsync(Course)">
+        <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-primary">@Course.Title</h5>
+        <p class="card-text flex-grow-1">@Course.Description</p>
+        <div class="mt-auto pt-3">
+            <div class="bg-light rounded p-2 position-relative">
+                <small class="text-muted">
+                    <strong>📅 Start:</strong> @Course.StartDate.ToShortDateString()<br />
+                    <strong>🏁 End:</strong> @Course.EndDate.ToShortDateString()
+                </small>
+
+                <AuthorizeView Roles="Teacher">
+                    <Authorized>
+                        <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2 edit-btn"
+                                @onclick="@(e => OnEdit.InvokeAsync(Course.Id))"
+                                @onclick:stopPropagation="true"
+                                title="Edit Course">
+                            <span class="bi-pencil"></span>
+                        </button>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public CourseVM Course { get; set; } = default!;
+    [Parameter] public EventCallback<CourseVM> OnOpen { get; set; }
+    [Parameter] public EventCallback<int> OnEdit { get; set; }
+}

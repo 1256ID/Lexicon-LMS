@@ -12,7 +12,8 @@
     {
         <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
             <ActivityCard Activity="a"
-                          OnOpen="OpenActivity"/>
+                          OnOpen="OpenActivity"
+                          OnEdit="EditActivity" />
         </div>
     }
 </div>
@@ -33,11 +34,14 @@
     {
         var moduleName = NavState.CurrentModuleName ?? $"Module {ModuleId}";
         NavState.SetActivity(ModuleId, moduleName, a.Id, a.Title);
-        Nav.NavigateTo($"/student/course/module/{ModuleId}/activity/{a.Id}");
+        Nav.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}/activity/{a.Id}");
     }
 
+    private void EditActivity(int id)
+    {
+        Nav.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}/activity/edit/{id}");
+    }
 }
-
 
 
 

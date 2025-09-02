@@ -20,7 +20,8 @@
                 {
                     <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
                         <ModuleCard Module="m"
-                                    OnOpen="OpenModule"/>
+                                    OnOpen="OpenModule"
+                                    OnEdit="EditModule" />
                     </div>
                 }
             </div>
@@ -31,7 +32,7 @@
 @code {
     [Parameter] public int CourseId { get; set; }
 
-    private List<ModuleVM>? ModulesList;
+    private List<ModuleVM> ModulesList;
 
     protected override async Task OnInitializedAsync()
     {
@@ -42,6 +43,11 @@
     private void OpenModule(ModuleVM m)
     {
         NavState.SetModule(m.Id, m.Title);
-        Nav.NavigateTo($"/student/course/module/{m.Id}");
+        Nav.NavigateTo($"/teacher/course/{CourseId}/module/{m.Id}");
+    }
+
+    private void EditModule(int id)
+    {
+        Nav.NavigateTo($"/teacher/course/{CourseId}/module/edit/{id}");
     }
 }

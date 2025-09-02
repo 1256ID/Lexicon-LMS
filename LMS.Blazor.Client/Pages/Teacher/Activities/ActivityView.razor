@@ -1,0 +1,15 @@
+﻿@using LMS.Blazor.Client.Services
+@inject NavigationStateService NavState
+
+<div class="card">
+    <div class="card-header">Activity View</div>
+    <div class="card-body">
+        <h5>Activity @ActivityId</h5>
+        <p>This is the main content for the activity.</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int ModuleId { get; set; }
+    [Parameter] public int ActivityId { get; set; }
+}

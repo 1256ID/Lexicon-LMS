@@ -1,4 +1,6 @@
 using LMS.Blazor.Client.Services;
+using LMS.Blazor.Client.Services.Implementations;
+using LMS.Blazor.Client.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -21,5 +23,9 @@ builder.Services.AddSingleton<AuthenticationStateProvider,
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore();
+
+builder.Services.AddScoped<ICourseService, MockCourseService>();
+builder.Services.AddScoped<IModuleService, MockModuleService>();
+builder.Services.AddScoped<IActivityService, MockActivityService>();
 
 await builder.Build().RunAsync();
