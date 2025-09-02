@@ -3,6 +3,8 @@
 @using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Components.Cards
 @using LMS.Blazor.Client.Services
+@using LMS.Blazor.Client.Services.Interfaces
+@inject ICourseService CourseService
 @inject NavigationManager Nav
 @inject NavigationStateService NavState
 
@@ -29,12 +31,7 @@
 </div>
 
 @code {
-    private List<CourseVM> CoursesList = new()
-    {
-        new CourseVM { Id = 1, Title = "C# Fundamentals", Description = "Learn the basics of C#", StartDate = DateTime.Parse("2025-08-14"), EndDate = DateTime.Parse("2025-09-05") },
-        new CourseVM { Id = 2, Title = "Web Development", Description = "Front-end and back-end development", StartDate = DateTime.Parse("2025-09-08"), EndDate = DateTime.Parse("2025-10-01") },
-        new CourseVM { Id = 3, Title = "Data Science", Description = "Data analysis and machine learning", StartDate = DateTime.Parse("2025-10-05"), EndDate = DateTime.Parse("2025-10-29") }
-    };
+    private List<CourseVM> CoursesList;
 
     private void OpenCourse(CourseVM c)
     {
@@ -47,11 +44,14 @@
         Nav.NavigateTo($"/teacher/course/edit/{id}");
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         NavState.ClearCourse();
         NavState.ClearModule();
         NavState.ClearActivity();
+
+        var courses = await CourseService.GetCoursesAsync();
+        CoursesList = courses.ToList();
     }
 }
 

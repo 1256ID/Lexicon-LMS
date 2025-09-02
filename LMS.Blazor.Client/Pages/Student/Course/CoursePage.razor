@@ -1,7 +1,10 @@
 ﻿@page "/student/course"
 @rendermode InteractiveWebAssembly
+@using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Services
 @using Microsoft.AspNetCore.Authorization
+@using LMS.Blazor.Client.Services.Interfaces
+@inject ICourseService CourseService
 @inject NavigationStateService NavState
 
 @attribute [Authorize(Roles = "Student")]
@@ -63,6 +66,7 @@
 </div>
 
 @code {
+    private CourseVM StudentCourse;
     private enum Tab { Modules, Documents, Participants, Schedule }
 
     private Tab SelectedTab = Tab.Modules; // default tab
@@ -72,8 +76,10 @@
         SelectedTab = tab;
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         NavState.ClearModule();
+
+        StudentCourse = await CourseService.GetCourseByIdAsync(1);
     }
 }

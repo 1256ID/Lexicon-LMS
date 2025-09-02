@@ -2,6 +2,8 @@
 @using LMS.Blazor.Client.Services
 @using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Components.Cards
+@using LMS.Blazor.Client.Services.Interfaces
+@inject IModuleService ModuleService
 @inject NavigationManager Nav
 @inject NavigationStateService NavState
 
@@ -29,12 +31,13 @@
 @code {
     [Parameter] public int CourseId { get; set; }
 
-    private List<ModuleVM> ModulesList = new()
+    private List<ModuleVM>? ModulesList;
+
+    protected override async Task OnInitializedAsync()
     {
-        new ModuleVM {Id= 1, Title= "Introduction", Description= "Intro to course", StartDate= DateTime.Parse("2025-08-14"), EndDate= DateTime.Parse("2025-08-20")},
-        new ModuleVM {Id= 2, Title= "C# Basics", Description= "Learn C#", StartDate= DateTime.Parse("2025-08-21"), EndDate= DateTime.Parse("2025-08-28")},
-        new ModuleVM {Id= 3, Title= "Web API", Description= "APIs in depth", StartDate= DateTime.Parse("2025-08-29"), EndDate= DateTime.Parse("2025-09-05")}
-    };
+        var modules = await ModuleService.GetModulesByCourseIdAsync(CourseId);
+        ModulesList = modules.ToList();
+    }
 
     private void OpenModule(ModuleVM m)
     {

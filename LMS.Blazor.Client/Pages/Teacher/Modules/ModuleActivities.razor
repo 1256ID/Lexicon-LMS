@@ -1,9 +1,11 @@
 ﻿@using LMS.Blazor.Client.Services
 @rendermode InteractiveWebAssembly
-@inject NavigationManager Nav
-@inject NavigationStateService NavState
 @using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Components.Cards
+@using LMS.Blazor.Client.Services.Interfaces
+@inject IActivityService ActivityService
+@inject NavigationManager Nav
+@inject NavigationStateService NavState
 
 <div class="row">
     @foreach (var a in ActivitiesList)
@@ -20,12 +22,13 @@
     [Parameter] public int CourseId { get; set; }
     [Parameter] public int ModuleId { get; set; }
 
-    private List<ActivityVM> ActivitiesList = new()
+    private List<ActivityVM>? ActivitiesList;
+
+    protected override async Task OnInitializedAsync()
     {
-        new ActivityVM  {Id=1, Title="Intro Video", Description="Video explaining course intro",  StartDate= DateTime.Parse("2025-08-14"), EndDate= DateTime.Parse("2025-08-15")},
-        new ActivityVM  {Id=2, Title="Quiz 1", Description="First quiz for the module",  StartDate= DateTime.Parse("2025-08-16"), EndDate= DateTime.Parse("2025-08-17")},
-        new ActivityVM  {Id=3, Title="Assignment", Description="Hands-on assignment", StartDate= DateTime.Parse("2025-08-18"), EndDate= DateTime.Parse("2025-08-19")}
-    };
+        var activities = await ActivityService.GetActivitiesByModuleIdAsync(ModuleId);
+        ActivitiesList = activities.ToList();
+    }
 
     private void OpenActivity(ActivityVM a)
     {
