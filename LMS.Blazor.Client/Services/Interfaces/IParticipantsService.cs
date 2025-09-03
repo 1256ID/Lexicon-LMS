@@ -1,5 +1,4 @@
-﻿// Services/Interfaces/IParticipantsService.cs
-public interface IParticipantsService
+﻿public interface IParticipantsService
 {
     Task<List<ParticipantDto>> GetCourseParticipantsAsync(int courseId);
     Task<List<AvailableStudentDto>> SearchAvailableStudentsAsync(string searchTerm, int excludeCourseId);
@@ -7,7 +6,7 @@ public interface IParticipantsService
     Task<bool> RemoveStudentFromCourseAsync(int courseId, int studentId);
 }
 
-// DTOs dans le même namespace
+// DTOs same namespace
 public class ParticipantDto
 {
     public int Id { get; set; }

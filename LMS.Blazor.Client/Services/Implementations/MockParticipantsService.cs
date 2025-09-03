@@ -8,6 +8,8 @@
         new() { Id = 4, Name = "Emma Brown", Email = "emma.brown@student.edu", Role = "Student" }
     };
 
+
+    // students already registered but not in this course
     private static List<AvailableStudentDto> _availableStudents = new()
     {
         new() { Id = 5, Name = "Charlie Davis", Email = "charlie.d@student.edu" },

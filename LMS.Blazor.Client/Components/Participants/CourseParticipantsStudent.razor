@@ -6,7 +6,7 @@
 @inject IParticipantsService ParticipantsService
 @attribute [Authorize(Roles = "Student")]
 
-<div class="card shadow-sm mb-4">
+<div class="card shadow-sm mb-5">
     <div class="card-header bg-light border-0 p-4">
         <h5 class="fw-bold mb-0 text-primary">
             <i class="bi bi-people me-2"></i>Course Participants
@@ -27,7 +27,7 @@
             @if (teacher != null)
             {
                 <div class="border-bottom bg-light px-4 py-2">
-                    <small class="text-muted fw-bold">INSTRUCTOR</small>
+                    <small class="text-muted fw-bold">TEACHER</small>
                 </div>
                 <div class="px-4 py-3 border-bottom">
                     <div class="d-flex align-items-center">
@@ -39,7 +39,7 @@
                             <h6 class="mb-0 fw-bold">@teacher.Name</h6>
                             <small class="text-muted">@teacher.Email</small>
                         </div>
-                        <span class="badge bg-primary ms-auto">Instructor</span>
+                        <span class="badge bg-primary ms-auto">Teacher</span>
                     </div>
                 </div>
             }
@@ -51,26 +51,26 @@
                     <small class="text-muted fw-bold">CLASSMATES (@(students.Count() - 1))</small>
                 </div>
 
-                @foreach (var student in students.OrderBy(s => s.IsCurrentUser ? 0 : 1).ThenBy(s => s.Name))
+                @foreach (var student in students.OrderBy(s => IsCurrentUser(s.Id) ? 0 : 1).ThenBy(s => s.Name))
                 {
                     <div class="px-4 py-3 @(student != students.Last() ? "border-bottom" : "")">
                         <div class="d-flex align-items-center">
-                            <div class="@(student.IsCurrentUser ? "bg-warning" : "bg-success") rounded-circle d-flex align-items-center justify-content-center me-3"
+                            <div class="@GetStudentAvatarClass(student.Id) rounded-circle d-flex align-items-center justify-content-center me-3"
                                  style="width: 40px; height: 40px;">
                                 <i class="bi bi-person-fill text-white"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <h6 class="mb-0">
                                     @student.Name
-                                    @if (student.IsCurrentUser)
+                                    @if (IsCurrentUser(student.Id))
                                     {
                                         <small class="text-muted">(You)</small>
                                     }
                                 </h6>
                                 <small class="text-muted">@student.Email</small>
                             </div>
-                            <span class="badge @(student.IsCurrentUser ? "bg-warning" : "bg-light text-dark")">
-                                @(student.IsCurrentUser ? "You" : "Student")
+                            <span class="badge @GetStudentBadgeClass(student.Id)">
+                                @GetStudentBadgeText(student.Id)
                             </span>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
         <div class="card-footer bg-light text-center">
             <small class="text-muted">
                 <i class="bi bi-people-fill me-1"></i>
-                Total: @participants.Count participants (@students.Count() students, 1 instructor)
+                Total: @participants.Count participants (@students.Count() students, 1 teacher)
             </small>
         </div>
     }
@@ -104,15 +104,7 @@
 
     private List<ParticipantDto> participants = new();
     private ParticipantDto? teacher;
-    private IEnumerable<StudentParticipantDto> students =>
-        participants.Where(p => p.Role == "Student")
-                   .Select(p => new StudentParticipantDto
-                   {
-                       Id = p.Id,
-                       Name = p.Name,
-                       Email = p.Email,
-                       IsCurrentUser = p.Id == CurrentUserId
-                   });
+    private IEnumerable<ParticipantDto> students => participants.Where(p => p.Role == "Student");
 
     private bool isLoading = true;
 
@@ -157,13 +149,15 @@
         }
     }
 
-    // DTO local
-    public class StudentParticipantDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Email { get; set; } = "";
-        public bool IsCurrentUser { get; set; }
-    }
+    // Helper methods
+    private bool IsCurrentUser(int studentId) => studentId == CurrentUserId;
 
+    private string GetStudentAvatarClass(int studentId) =>
+        IsCurrentUser(studentId) ? "bg-warning" : "bg-success";
+
+    private string GetStudentBadgeClass(int studentId) =>
+        IsCurrentUser(studentId) ? "bg-warning" : "bg-light text-dark";
+
+    private string GetStudentBadgeText(int studentId) =>
+        IsCurrentUser(studentId) ? "You" : "Student";
 }
