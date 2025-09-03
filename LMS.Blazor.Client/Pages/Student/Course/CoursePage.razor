@@ -1,5 +1,6 @@
 ﻿@page "/student/course"
 @rendermode InteractiveWebAssembly
+@using LMS.Blazor.Client.Components.Participants
 @using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Services
 @using Microsoft.AspNetCore.Authorization
@@ -53,7 +54,7 @@
                         <CourseDocuments />
                         break;
                     case Tab.Participants:
-                        <CourseParticipants />
+                        <CourseParticipantsStudent />
                         break;
                     case Tab.Schedule:
                         <CourseSchedule />
