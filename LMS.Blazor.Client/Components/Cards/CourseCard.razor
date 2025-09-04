@@ -40,7 +40,7 @@
         string.IsNullOrWhiteSpace(Course.Description)
             ? "No description available."
             : (Course.Description.Length > 90
-                ? Course.Description.Substring(0, 90) + "..."
+                ? Course.Description.Substring(0, 80) + "..."
                 : Course.Description);
 
 }

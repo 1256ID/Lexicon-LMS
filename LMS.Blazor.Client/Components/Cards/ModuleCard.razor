@@ -39,7 +39,7 @@
        string.IsNullOrWhiteSpace(Module.Description)
            ? "No description available."
            : (Module.Description.Length > 90
-               ? Module.Description.Substring(0, 90) + "..."
+               ? Module.Description.Substring(0, 80) + "..."
                : Module.Description);
 }
 
