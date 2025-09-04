@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using LMS.Blazor.Client.Services.Interfaces
 @using LMS.Blazor.Client.Models
+@using LMS.Blazor.Client.Components.Common
 @rendermode InteractiveWebAssembly
 @inject IParticipantsService ParticipantsService
 @attribute [Authorize(Roles = "Teacher")]
@@ -16,92 +17,89 @@
             </button>
         </div>
     </div>
+
     <div class="card-body p-0">
-        @if (isLoading)
-        {
-            <div class="text-center p-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        }
-        else if (participants != null && participants.Any())
-        {
-            <!-- Teacher Section -->
-            @if (teacher != null)
-            {
-                <div class="border-bottom bg-light px-4 py-2">
-                    <small class="text-muted fw-bold">TEACHER</small>
-                </div>
-                <div class="px-4 py-3 border-bottom">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
-                             style="width: 40px; height: 40px;">
-                            <i class="bi bi-person-fill text-white"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0 fw-bold">@teacher.Name</h6>
-                            <small class="text-muted">@teacher.Email</small>
-                        </div>
-                        <span class="badge bg-primary ms-auto">Teacher</span>
-                    </div>
-                </div>
-            }
+        <Loading Show="@isLoading" Message="Loading participants..." />
 
-            <!-- Students Section -->
-            @if (students.Any())
+        @if (!isLoading)
+        {
+            @if (participants != null && participants.Any())
             {
-                <div class="border-bottom bg-light px-4 py-2">
-                    <small class="text-muted fw-bold">STUDENTS (@students.Count())</small>
-                </div>
-
-                @foreach (var student in students)
+                <!-- Teacher Section -->
+                @if (teacher != null)
                 {
+                    <div class="border-bottom bg-light px-4 py-2">
+                        <small class="text-muted fw-bold">TEACHER</small>
+                    </div>
                     <div class="px-4 py-3 border-bottom">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-3"
-                                     style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person-fill text-white"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">@student.Name</h6>
-                                    <small class="text-muted">@student.Email</small>
-                                   
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                 style="width: 40px; height: 40px;">
+                                <i class="bi bi-person-fill text-white"></i>
                             </div>
                             <div>
-                                <span class="badge bg-light text-dark me-2">Student</span>
-                                <button class="btn btn-outline-danger btn-sm"
-                                        @onclick="@(() => RemoveStudent(student.Id))"
-                                        title="Remove from course"
-                                        disabled="@isRemoving">
-                                    @if (isRemoving && removingStudentId == student.Id)
-                                    {
-                                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-person-dash"></i>
-                                    }
-                                </button>
+                                <h6 class="mb-0 fw-bold">@teacher.Name</h6>
+                                <small class="text-muted">@teacher.Email</small>
                             </div>
+                            <span class="badge bg-primary ms-auto">Teacher</span>
                         </div>
                     </div>
                 }
+
+                <!-- Students Section -->
+                @if (students.Any())
+                {
+                    <div class="border-bottom bg-light px-4 py-2">
+                        <small class="text-muted fw-bold">STUDENTS (@students.Count())</small>
+                    </div>
+
+                    @foreach (var student in students)
+                    {
+                        <div class="px-4 py-3 border-bottom">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-3"
+                                         style="width: 40px; height: 40px;">
+                                        <i class="bi bi-person-fill text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">@student.Name</h6>
+                                        <small class="text-muted">@student.Email</small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-light text-dark me-2">Student</span>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            @onclick="@(() => RemoveStudent(student.Id))"
+                                            disabled="@isRemoving && removingStudentId == student.Id"
+                                            title="Remove from course">
+                                        @if (isRemoving && removingStudentId == student.Id)
+                                        {
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-person-dash"></i>
+                                        }
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
             }
-        }
-        else
-        {
-            <div class="text-center text-muted p-4">
-                <i class="bi bi-people fs-1 mb-2"></i>
-                <p class="mb-0">No participants in this course</p>
-            </div>
+            else
+            {
+                <div class="text-center text-muted p-4">
+                    <i class="bi bi-people fs-1 mb-2"></i>
+                    <p class="mb-0">No participants in this course</p>
+                </div>
+            }
         }
     </div>
 
     <!-- Course Stats Footer -->
-    @if (participants != null && participants.Any())
+    @if (!isLoading && participants != null && participants.Any())
     {
         <div class="card-footer bg-light text-center">
             <small class="text-muted">
@@ -129,54 +127,50 @@
                                placeholder="Enter student name or email..." />
                     </div>
 
-                    @if (isSearching)
+                    <Loading Show="@isSearching" Message="Searching students..." />
+
+                    @if (!isSearching)
                     {
-                        <div class="text-center p-3">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                <span class="visually-hidden">Searching...</span>
-                            </div>
-                            <p class="mt-2 mb-0 text-muted">Searching students...</p>
-                        </div>
-                    }
-                    else if (!string.IsNullOrEmpty(searchTerm) && availableStudents.Any())
-                    {
-                        <div class="list-group">
-                            @foreach (var student in availableStudents.Take(5))
-                            {
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">@student.Name</h6>
-                                        <small class="text-muted">@student.Email</small>
+                        @if (!string.IsNullOrEmpty(searchTerm) && availableStudents.Any())
+                        {
+                            <div class="list-group">
+                                @foreach (var student in availableStudents.Take(5))
+                                {
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">@student.Name</h6>
+                                            <small class="text-muted">@student.Email</small>
+                                        </div>
+                                        <button class="btn btn-outline-primary btn-sm"
+                                                @onclick="@(() => AddStudent(student.Id))"
+                                                disabled="@isAdding && addingStudentId == student.Id">
+                                            @if (isAdding && addingStudentId == student.Id)
+                                            {
+                                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            }
+                                            else
+                                            {
+                                                <span>Add</span>
+                                            }
+                                        </button>
                                     </div>
-                                    <button class="btn btn-outline-primary btn-sm"
-                                            @onclick="@(() => AddStudent(student.Id))"
-                                            disabled="@isAdding">
-                                        @if (isAdding && addingStudentId == student.Id)
-                                        {
-                                            <span class="spinner-border spinner-border-sm" role="status"></span>
-                                        }
-                                        else
-                                        {
-                                            <span>Add</span>
-                                        }
-                                    </button>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else if (!string.IsNullOrEmpty(searchTerm) && !isSearching)
-                    {
-                        <div class="text-muted text-center p-3">
-                            <i class="bi bi-search"></i>
-                            <p class="mb-0">No students found matching "@searchTerm"</p>
-                        </div>
-                    }
-                    else if (string.IsNullOrEmpty(searchTerm))
-                    {
-                        <div class="text-muted text-center p-3">
-                            <i class="bi bi-info-circle"></i>
-                            <p class="mb-0">Start typing to search for students</p>
-                        </div>
+                                }
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(searchTerm))
+                        {
+                            <div class="text-muted text-center p-3">
+                                <i class="bi bi-search"></i>
+                                <p class="mb-0">No students found matching "@searchTerm"</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-muted text-center p-3">
+                                <i class="bi bi-info-circle"></i>
+                                <p class="mb-0">Start typing to search for students</p>
+                            </div>
+                        }
                     }
                 </div>
                 <div class="modal-footer">
@@ -186,7 +180,6 @@
         </div>
     </div>
 }
-
 
 @code {
     [Parameter] public int CourseId { get; set; }
@@ -331,6 +324,4 @@
         searchTerm = "";
         availableStudents.Clear();
     }
-
-    
 }

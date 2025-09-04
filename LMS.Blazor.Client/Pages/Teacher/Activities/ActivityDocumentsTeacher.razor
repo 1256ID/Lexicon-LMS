@@ -1,0 +1,84 @@
+﻿@using LMS.Blazor.Client.Components.Common
+@using LMS.Blazor.Client.Services
+@using Microsoft.AspNetCore.Authorization
+@inject IActivityService ActivityService
+@attribute [Authorize(Roles = "Teacher")]
+
+<Loading Show="@isLoading" Message="Loading documents..." />
+
+@if (!isLoading)
+{
+    <h3>Documents for Activity @ActivityId</h3>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">Activity Documents</div>
+                <ul class="list-group list-group-flush">
+                    @foreach (var d in Docs)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@d.Title</span>
+                            <button class="btn btn-outline-secondary btn-sm" @onclick="() => Select(d.Id)">View</button>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card h-100">
+                <div class="card-header">Preview</div>
+                <div class="card-body">
+                    @if (SelectedDoc is null)
+                    {
+                        <em>Select a document…</em>
+                    }
+                    else
+                    {
+                        <h5>@SelectedDoc.Title</h5>
+                        <p class="text-muted">(@SelectedDoc.FileName)</p>
+                        <hr />
+                        <p>Here you render the document viewer (pdf/embed/markdown etc.).</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int ModuleId { get; set; }
+    [Parameter] public int ActivityId { get; set; }
+
+    private List<DocVm> Docs = new();
+    private DocVm? SelectedDoc;
+    private bool isLoading = true;
+
+    private record DocVm(int Id, string Title, string FileName);
+
+    protected override void OnParametersSet()
+    {
+        try
+        {
+            isLoading = true;
+            // Dummy docs, byt till API-anrop om du vill
+            Docs = ActivityId switch
+            {
+                1 => new() { new(101, "Intro Video Notes", "intro-notes.pdf"), new(102, "Intro Quiz", "intro-quiz.pdf") },
+                2 => new() { new(201, "Quiz 1 Notes", "quiz1-notes.pdf"), new(202, "Exercise Sheet", "exercise1.docx") },
+                3 => new() { new(301, "Assignment Instructions", "assignment.pdf"), new(302, "Example Solution", "solution.docx") },
+                _ => new()
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading Documents: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void Select(int id) => SelectedDoc = Docs.FirstOrDefault(x => x.Id == id);
+}
