@@ -3,12 +3,13 @@
 @inject NavigationStateService NavState
 @using Microsoft.AspNetCore.Authorization
 
-<div class="card h-100 shadow-sm hover-card course-card">
+<div class="card h-100 shadow-sm hover-card module-card">
     <div class="card-body d-flex flex-column p-4 card-content" @onclick="() => OnOpen.InvokeAsync(Module)">
-        <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-primary">@Module.Name</h5>
+        <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-module">@Module.Name</h5>
         <p class="card-text flex-grow-1 text-muted">
             @ShortDescription
-        </p>        <div class="mt-auto pt-3">
+        </p>        
+        <div class="mt-auto pt-3">
             <div class="bg-light rounded p-2 position-relative">
                 <small class="text-muted">
                     <strong>📅 Start:</strong> @Module.StartDate.ToShortDateString()<br />
@@ -20,7 +21,7 @@
                         <button class="btn btn-sm btn-outline-primary position-absolute top-50 end-0 translate-middle-y me-2 edit-btn"
                                 @onclick="@(e => OnEdit.InvokeAsync(Module.Id))"
                                 @onclick:stopPropagation="true"
-                                title="Edit Course">
+                                title="Edit Module">
                             <span class="bi-pencil"></span>
                         </button>
                     </Authorized>
@@ -38,7 +39,7 @@
     private string ShortDescription =>
        string.IsNullOrWhiteSpace(Module.Description)
            ? "No description available."
-           : (Module.Description.Length > 90
+           : (Module.Description.Length > 80
                ? Module.Description.Substring(0, 80) + "..."
                : Module.Description);
 }

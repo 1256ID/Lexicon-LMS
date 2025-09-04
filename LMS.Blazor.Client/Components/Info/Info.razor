@@ -7,7 +7,7 @@
 
 <div class="card shadow-sm mb-5">
     <div class="card-header bg-light border-0 p-4">
-        <h5 class="fw-bold mb-0 text-primary">
+        <h5 class="fw-bold mb-0 @GetTitleColorClass()">
             <i class="@GetIcon() me-2"></i>@GetTitle()
         </h5>
     </div>
@@ -252,6 +252,15 @@
         EntityType.Module => "bi bi-collection",
         EntityType.Activity => "bi bi-clipboard-check",
         _ => "bi bi-info-circle"
+    };
+
+    // Get the appropriate color class based on entity type
+    private string GetTitleColorClass() => InfoType switch
+    {
+        EntityType.Course => "text-course",
+        EntityType.Module => "text-module",
+        EntityType.Activity => "activity-text-purple",
+        _ => "text-primary"
     };
 
     private int GetId() => InfoType switch
