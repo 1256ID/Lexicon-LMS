@@ -1,5 +1,6 @@
 ﻿@page "/student/course"
 @rendermode InteractiveWebAssembly
+@using LMS.Blazor.Client.Components.Participants
 @using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Services
 @using Microsoft.AspNetCore.Authorization
@@ -53,7 +54,7 @@
                         <CourseDocuments />
                         break;
                     case Tab.Participants:
-                        <CourseParticipants />
+                        <CourseParticipantsStudent />
                         break;
                     case Tab.Schedule:
                         <CourseSchedule />
@@ -66,6 +67,7 @@
 </div>
 
 @code {
+    private int CourseId = 1;
     private CourseVM StudentCourse;
     private enum Tab { Modules, Documents, Participants, Schedule }
 
@@ -80,6 +82,6 @@
     {
         NavState.ClearModule();
 
-        StudentCourse = await CourseService.GetCourseByIdAsync(1);
+        StudentCourse = await CourseService.GetCourseByIdAsync(CourseId);
     }
 }
