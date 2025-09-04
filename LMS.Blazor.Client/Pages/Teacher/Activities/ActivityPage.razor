@@ -11,7 +11,7 @@
         <div class="col-lg-10 mx-auto">
 
             <div class="mb-4">
-                <h2 class="fw-bold text-primary">@ActivityName</h2>
+                <h2 class="fw-bold text-primary">Activity details</h2>
                 <p class="text-muted"><i class="bi bi-calendar-event me-2 text-secondary"></i> Start: 2025/09/18</p>
             </div>
 
@@ -44,12 +44,12 @@
     private enum Tab { View, Documents }
     private Tab SelectedTab = Tab.View;
 
-    private string ActivityName => NavState.CurrentActivityName ?? $"Activity {ActivityId}";
-
     protected override void OnInitialized()
     {
         var moduleName = NavState.CurrentModuleName ?? $"Module {ModuleId}";
-        NavState.SetActivity(ModuleId, moduleName, ActivityId, ActivityName);
+        var activityName = NavState.CurrentActivityName ?? $"Activity {ActivityId}";
+        NavState.SetCourse(CourseId, NavState.CurrentCourseName ?? $"Course {CourseId}");
+        NavState.SetActivity(ModuleId, moduleName, ActivityId, activityName);
     }
 
     private void SelectTab(Tab tab) => SelectedTab = tab;
