@@ -5,9 +5,10 @@
 
 <div class="card h-100 shadow-sm hover-card course-card">
     <div class="card-body d-flex flex-column p-4 card-content" @onclick="() => OnOpen.InvokeAsync(Module)">
-        <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-primary">@Module.Title</h5>
-        <p class="card-text flex-grow-1">@Module.Description</p>
-        <div class="mt-auto pt-3">
+        <h5 class="card-title fw-bold mb-3 border-bottom pb-2 text-primary">@Module.Name</h5>
+        <p class="card-text flex-grow-1 text-muted">
+            @ShortDescription
+        </p>        <div class="mt-auto pt-3">
             <div class="bg-light rounded p-2 position-relative">
                 <small class="text-muted">
                     <strong>📅 Start:</strong> @Module.StartDate.ToShortDateString()<br />
@@ -33,6 +34,13 @@
     [Parameter] public ModuleVM Module { get; set; } = default!;
     [Parameter] public EventCallback<ModuleVM> OnOpen { get; set; }
     [Parameter] public EventCallback<int> OnEdit { get; set; }
+
+    private string ShortDescription =>
+       string.IsNullOrWhiteSpace(Module.Description)
+           ? "No description available."
+           : (Module.Description.Length > 90
+               ? Module.Description.Substring(0, 90) + "..."
+               : Module.Description);
 }
 
 

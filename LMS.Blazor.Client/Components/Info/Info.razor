@@ -1,0 +1,304 @@
+﻿@using LMS.Blazor.Client.Models
+@using LMS.Blazor.Client.Services
+@using LMS.Blazor.Client.Services.Interfaces
+@inject ICourseService CourseService
+@inject IModuleService ModuleService
+@inject IActivityService ActivityService
+
+<div class="card shadow-sm mb-5">
+    <div class="card-header bg-light border-0 p-4">
+        <h5 class="fw-bold mb-0 text-primary">
+            <i class="@GetIcon() me-2"></i>@GetTitle()
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        @if (IsLoading)
+        {
+            <div class="text-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else if (HasError)
+        {
+            <div class="alert alert-danger m-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                An error occurred while loading the information.
+            </div>
+        }
+        else
+        {
+            @if (!string.IsNullOrEmpty(GetDescription()))
+            {
+                <div class="border-bottom bg-light px-4 py-2">
+                    <small class="text-muted fw-bold">DESCRIPTION</small>
+                </div>
+                <div class="px-4 py-4 border-bottom">
+                    <p class="lead mb-0">@GetDescription()</p>
+                </div>
+            }
+
+            <div class="border-bottom bg-light px-4 py-2">
+                <small class="text-muted fw-bold">GENERAL INFORMATION</small>
+            </div>
+            <div class="px-4 py-4 border-bottom">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>ID:</strong> <span class="text-muted ms-2">@GetId()</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Name:</strong> <span class="text-muted ms-2">@GetName()</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(GetTypeName()))
+                        {
+                            <div class="mb-3">
+                                <strong>Type:</strong>
+                                <span class="badge bg-secondary ms-2">@GetTypeName()</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Start Date:</strong>
+                            <div class="mt-1">
+                                <i class="bi bi-calendar-event text-success me-2"></i>
+                                <span class="text-muted">@GetStartDate().ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <strong>End Date:</strong>
+                            <div class="mt-1">
+                                <i class="bi bi-calendar-x text-danger me-2"></i>
+                                <span class="text-muted">@GetEndDate().ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (InfoType == EntityType.Course && Course != null)
+            {
+                <div class="border-bottom bg-light px-4 py-2">
+                    <small class="text-muted fw-bold">COURSE DETAILS</small>
+                </div>
+                <div class="px-4 py-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Course ID:</strong> <span class="text-muted ms-2">@Course.Id</span>
+                            </div>
+                            @if (Course.StudentCount.HasValue)
+                            {
+                                <div class="mb-3">
+                                    <strong>Students:</strong> <span class="text-muted ms-2">@Course.StudentCount</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            @if (Course.ModuleCount.HasValue)
+                            {
+                                <div class="mb-3">
+                                    <strong>Modules:</strong> <span class="text-muted ms-2">@Course.ModuleCount</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Course.TeacherName))
+                            {
+                                <div class="mb-3">
+                                    <strong>Teacher:</strong> <span class="text-muted ms-2">@Course.TeacherName</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (InfoType == EntityType.Module && Module != null)
+            {
+                <div class="border-bottom bg-light px-4 py-2">
+                    <small class="text-muted fw-bold">MODULE DETAILS</small>
+                </div>
+                <div class="px-4 py-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Module ID:</strong> <span class="text-muted ms-2">@Module.Id</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Course ID:</strong> <span class="text-muted ms-2">@Module.CourseId</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            @if (!string.IsNullOrEmpty(Module.CourseName))
+                            {
+                                <div class="mb-3">
+                                    <strong>Course:</strong> <span class="text-muted ms-2">@Module.CourseName</span>
+                                </div>
+                            }
+                            @if (Module.ActivityCount.HasValue)
+                            {
+                                <div class="mb-3">
+                                    <strong>Activities:</strong> <span class="text-muted ms-2">@Module.ActivityCount</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (InfoType == EntityType.Activity && Activity != null)
+            {
+                <div class="border-bottom bg-light px-4 py-2">
+                    <small class="text-muted fw-bold">ACTIVITY DETAILS</small>
+                </div>
+                <div class="px-4 py-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <strong>Activity ID:</strong> <span class="text-muted ms-2">@Activity.Id</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Module ID:</strong> <span class="text-muted ms-2">@Activity.ModuleId</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            @if (!string.IsNullOrEmpty(Activity.ModuleName))
+                            {
+                                <div class="mb-3">
+                                    <strong>Module:</strong> <span class="text-muted ms-2">@Activity.ModuleName</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Activity.TypeName))
+                            {
+                                <div class="mb-3">
+                                    <span class="badge bg-secondary">@Activity.TypeName</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-4">
+                            @if (Activity.MaxScore.HasValue)
+                            {
+                                <div class="mb-3">
+                                    <strong>Max Score:</strong> <span class="text-muted ms-2">@Activity.MaxScore</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int? CourseId { get; set; }
+    [Parameter] public int? ModuleId { get; set; }
+    [Parameter] public int? ActivityId { get; set; }
+
+    private CourseVM Course;
+    private ModuleVM Module;
+    private ActivityVM Activity;
+    private bool IsLoading = true;
+    private bool HasError = false;
+    private EntityType InfoType;
+
+    private enum EntityType { Course, Module, Activity }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            HasError = false;
+
+            if (ActivityId.HasValue)
+            {
+                InfoType = EntityType.Activity;
+                Activity = await ActivityService.GetActivityByIdAsync(ActivityId.Value);
+            }
+            else if (ModuleId.HasValue)
+            {
+                InfoType = EntityType.Module;
+                Module = await ModuleService.GetModuleByIdAsync(ModuleId.Value);
+            }
+            else if (CourseId.HasValue)
+            {
+                InfoType = EntityType.Course;
+                Course = await CourseService.GetCourseByIdAsync(CourseId.Value);
+            }
+        }
+        catch (Exception)
+        {
+            HasError = true;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private string GetTitle() => InfoType switch
+    {
+        EntityType.Course => Course?.Name ?? "Course Information",
+        EntityType.Module => Module?.Name ?? "Module Information",
+        EntityType.Activity => Activity?.Name ?? "Activity Information",
+        _ => "Information"
+    };
+
+    private string GetIcon() => InfoType switch
+    {
+        EntityType.Course => "bi bi-book",
+        EntityType.Module => "bi bi-collection",
+        EntityType.Activity => "bi bi-clipboard-check",
+        _ => "bi bi-info-circle"
+    };
+
+    private int GetId() => InfoType switch
+    {
+        EntityType.Course => Course?.Id ?? 0,
+        EntityType.Module => Module?.Id ?? 0,
+        EntityType.Activity => Activity?.Id ?? 0,
+        _ => 0
+    };
+
+    private string GetName() => InfoType switch
+    {
+        EntityType.Course => Course?.Name ?? "",
+        EntityType.Module => Module?.Name ?? "",
+        EntityType.Activity => Activity?.Name ?? "",
+        _ => ""
+    };
+
+    private string GetDescription() => InfoType switch
+    {
+        EntityType.Course => Course?.Description ?? "",
+        EntityType.Module => Module?.Description ?? "",
+        EntityType.Activity => Activity?.Description ?? "",
+        _ => ""
+    };
+
+    private DateTime GetStartDate() => InfoType switch
+    {
+        EntityType.Course => Course?.StartDate ?? DateTime.MinValue,
+        EntityType.Module => Module?.StartDate ?? DateTime.MinValue,
+        EntityType.Activity => Activity?.StartDate ?? DateTime.MinValue,
+        _ => DateTime.MinValue
+    };
+
+    private DateTime GetEndDate() => InfoType switch
+    {
+        EntityType.Course => Course?.EndDate ?? DateTime.MinValue,
+        EntityType.Module => Module?.EndDate ?? DateTime.MinValue,
+        EntityType.Activity => Activity?.EndDate ?? DateTime.MinValue,
+        _ => DateTime.MinValue
+    };
+
+    private string GetTypeName() => InfoType switch
+    {
+        EntityType.Course => Course?.TypeName ?? "",
+        EntityType.Module => Module?.TypeName ?? "",
+        EntityType.Activity => Activity?.TypeName ?? "",
+        _ => ""
+    };
+}

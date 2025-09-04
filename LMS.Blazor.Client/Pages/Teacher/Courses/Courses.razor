@@ -35,7 +35,7 @@
 
     private void OpenCourse(CourseVM c)
     {
-        NavState.SetCourse(c.Id, c.Title);
+        NavState.SetCourse(c.Id, c.Name);
         Nav.NavigateTo($"/teacher/course/{c.Id}");
     }
 
