@@ -32,7 +32,7 @@
     private void OpenActivity(ActivityVM a)
     {
         var moduleName = NavState.CurrentModuleName ?? $"Module {ModuleId}";
-        NavState.SetActivity(ModuleId, moduleName, a.Id, a.Name);
+        NavState.SetActivity(ModuleId, moduleName, a.Id, a.Title);
         Nav.NavigateTo($"/student/course/module/{ModuleId}/activity/{a.Id}");
     }
 
