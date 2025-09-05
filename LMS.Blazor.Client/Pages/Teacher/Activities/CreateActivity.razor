@@ -1,5 +1,6 @@
-﻿@page "/teacher/courses/{CourseId:int}/modules/{ModuleId:int}/activities/new"
+﻿@page "/teacher/course/{CourseId:int}/module/{ModuleId:int}/activity/new"
 
+@rendermode InteractiveWebAssembly
 @inject NavigationManager Navigation
 @inject HttpClient HttpClient
 
@@ -104,7 +105,7 @@
 
     private void HandleSubmit()
     {
-        Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules/{ModuleId}/activities");
+        Navigation.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}");
 
         // WITH API :
         /*
@@ -150,6 +151,6 @@
 
     private void HandleCancel()
     {
-        Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules/{ModuleId}/activities");
+        Navigation.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}");
     }
 }
