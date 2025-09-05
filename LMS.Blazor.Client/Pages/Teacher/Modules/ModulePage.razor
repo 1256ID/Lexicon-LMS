@@ -1,83 +1,4 @@
 ﻿@page "/teacher/course/{CourseId:int}/module/{ModuleId:int}"
-
-@rendermode InteractiveWebAssembly
-@using LMS.Blazor.Client.Components.Info
-@using Microsoft.AspNetCore.Authorization
-@using LMS.Blazor.Client.Services
-@using LMS.Blazor.Client.Components.Tabs
-@using LMS.Blazor.Client.Models
-@inject NavigationManager Nav
-@inject NavigationStateService NavState
-@attribute [Authorize(Roles = "Teacher")]
-
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <div class="mb-4">
-                <h2 class="fw-bold text-module">@ModuleName</h2>
-                <p class="text-muted">
-                    <i class="bi bi-calendar-event me-2 text-secondary"></i>
-                    Start: 2025/09/14
-                </p>
-            </div>
-            
-            <!-- Tab Navigation Component -->
-            <TabNavigation TTabType="Tab" 
-                       SelectedTab="SelectedTab" 
-                       OnTabChanged="OnTabChanged"
-                       ShowDetailsButton="false"
-                       Buttons="TabButtons" />
-                       
-            <div class="tab-content">
-                @switch (SelectedTab)
-                {
-                    case Tab.Info:
-                        <Info ModuleId="@ModuleId" />
-                        break;
-                    case Tab.Activities:
-                        <ModuleActivities ModuleId="@ModuleId" />
-                        break;
-                    case Tab.Documents:
-                        <ModuleDocuments ModuleId="@ModuleId" />
-                        break;
-                }
-            </div>
-        </div>
-    </div>
-</div>
-
-@code {
-    [Parameter] public int CourseId { get; set; }
-    [Parameter] public int ModuleId { get; set; }
-    
-    // Tab enumeration for module navigation
-    private enum Tab { Info, Activities, Documents }
-    private Tab SelectedTab = Tab.Activities; // Start with Activities tab
-    private string ModuleName => NavState.CurrentModuleName ?? $"Module {ModuleId}";
-    
-    // Tab button configuration for the navigation component
-    private List<TabNavigation<Tab>.TabButton<Tab>> TabButtons = new()
-    {
-        new() { Label = "Info", TabValue = Tab.Info },
-        new() { Label = "Activities", TabValue = Tab.Activities },
-        new() { Label = "Documents", TabValue = Tab.Documents }
-    };
-    
-    // Handle tab change event from navigation component
-    private async Task OnTabChanged(Tab newTab)
-    {
-        SelectedTab = newTab;
-    }
-    
-    // Initialize module navigation state
-    protected override void OnInitialized()
-    {
-        NavState.SetModule(ModuleId, ModuleName);
-        NavState.ClearActivity();
-    }
-}
-
-@* @page "/teacher/course/{CourseId:int}/module/{ModuleId:int}"
 @rendermode InteractiveWebAssembly
 @using Microsoft.AspNetCore.Authorization
 @using LMS.Blazor.Client.Services
@@ -133,4 +54,3 @@
 
     private void SelectTab(Tab tab) => SelectedTab = tab;
 }
- *@

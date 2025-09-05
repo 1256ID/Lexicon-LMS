@@ -1,188 +1,98 @@
-﻿@page "/test"
-@using LMS.Blazor.Client.Components.Cards
+﻿@using LMS.Blazor.Client.Components.Cards
 @using LMS.Blazor.Client.Components.Tabs
-@using LMS.Blazor.Client.Models
+@inject NavigationManager Navigation
+
+ @page "/test"
 
 <div class="container mt-4">
+
     <h1 class="mb-4">Test Page</h1>
-    <p>This is a test page to demonstrate components.</p>
-
-    <!-- Test TabNavigation for Course -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h5>Course Navigation Test</h5>
-            <TabNavigation TTabType="CourseTab"
-                           SelectedTab="CurrentCourseTab"
-                           OnTabChanged="HandleCourseTabChange"
-                           OnDetailsClick="ShowCourseDetails"
-                           Buttons="CourseTabList"
-                           ShowDetailsButton="true" />
-
-            <div class="mt-2 p-2 bg-light rounded">
-                <p>Current course tab: <strong>@CurrentCourseTab</strong></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Test TabNavigation for Module -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h5>Module Navigation Test</h5>
-            <TabNavigation TTabType="ModuleTab"
-                           SelectedTab="CurrentModuleTab"
-                           OnTabChanged="HandleModuleTabChange"
-                           OnDetailsClick="ShowModuleDetails"
-                           Buttons="ModuleTabList"
-                           ShowDetailsButton="true" />
-
-            <div class="mt-2 p-2 bg-info bg-opacity-10 rounded">
-                <p>Current module tab: <strong>@CurrentModuleTab</strong></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Test TabNavigation for Activity -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h5>Activity Navigation Test</h5>
-            <TabNavigation TTabType="ActivityTab"
-                           SelectedTab="CurrentActivityTab"
-                           OnTabChanged="HandleActivityTabChange"
-                           OnDetailsClick="ShowActivityDetails"
-                           Buttons="ActivityTabList"
-                           ShowDetailsButton="true" />
-
-            <div class="mt-2 p-2 bg-success bg-opacity-10 rounded">
-                <p>Current activity tab: <strong>@CurrentActivityTab</strong></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Test Cards -->
+    <p>This is a test page to demonstrate the layout and components.</p>
+  
+   
     <div class="row">
-        <div class="col-md-4 mb-3">
-            <h5>Course Card</h5>
-            <CourseCard Course="@TestCourse" />
+
+        <div>
+            <CourseTabs />
+        </div>
+        <div>
+            <ModuleTabs />
         </div>
 
-        <div class="col-md-4 mb-3">
-            <h5>Module Card</h5>
-            <ModuleCard Module="@TestModule" />
+        <div >
+            <CourseCard />
         </div>
+        <div>
+            <ModuleCard/>
+        </div>
+        <div >
+            <ActivityCard/>
+        </div>
+        
 
-        <div class="col-md-4 mb-3">
-            <h5>Activity Card</h5>
-            <ActivityCard Activity="@TestActivity" />
-        </div>
+
     </div>
+</div>
+            
+
+@*
+    <!-- Courses -->
+    <h2 class="mb-3">Courses</h2>
+    <div class="row">
+        @foreach (var course in Courses)
+        {
+            <div class="col-md-3 mb-3">
+                <CourseCard Course="course" OnClick="() => Navigation.NavigateTo($"/modules/{course.Id}")" />
+            </div>
+        }
+    </div>
+
+    <!-- Modules -->
+    <h2 class="mb-3 mt-5">Modules</h2>
+    <div class="row">
+        @foreach (var module in Modules)
+        {
+            <div class="col-md-3 mb-3">
+                <ModuleCard Module="module" OnClick="() => Navigation.NavigateTo($"/activities/{module.Id}")" />
+            </div>
+        }
+    </div>
+
+    <!-- Activities -->
+    <h2 class="mb-3 mt-5">Activities</h2>
+    <div class="row">
+        @foreach (var activity in Activities)
+        {
+            <div class="col-md-3 mb-3">
+                <ActivityCard Activity="activity" OnClick="() => OpenActivity(activity.Id)" />
+            </div>
+        }
+    </div>
+
 </div>
 
 @code {
-    // Course tabs configuration
-    private enum CourseTab { Info, Modules, Documents, Participants, Schedule }
-    private CourseTab CurrentCourseTab = CourseTab.Info;
-    private List<TabNavigation<CourseTab>.TabButton<CourseTab>> CourseTabList = new()
-    {
-        new() { Label = "Info", TabValue = CourseTab.Info },
-        new() { Label = "Modules", TabValue = CourseTab.Modules },
-        new() { Label = "Documents", TabValue = CourseTab.Documents },
-        new() { Label = "Participants", TabValue = CourseTab.Participants },
-        new() { Label = "Schedule", TabValue = CourseTab.Schedule }
-    };
+    // private List<Course> Courses = new List<Course>
+    // {
+    //     new Course { Id=1, Name=".NET 2025", Description="Learn .NET and C#", StartDate=DateTime.Today },
+    //     new Course { Id=2, Name="Javascript Basics", Description="Intro to JS", StartDate=DateTime.Today.AddDays(7) }
+    // };
 
-    // Module tabs configuration
-    private enum ModuleTab { Info, Activities, Documents, Resources }
-    private ModuleTab CurrentModuleTab = ModuleTab.Info;
-    private List<TabNavigation<ModuleTab>.TabButton<ModuleTab>> ModuleTabList = new()
-    {
-        new() { Label = "Info", TabValue = ModuleTab.Info },
-        new() { Label = "Activities", TabValue = ModuleTab.Activities },
-        new() { Label = "Documents", TabValue = ModuleTab.Documents },
-        new() { Label = "Resources", TabValue = ModuleTab.Resources }
-    };
+    // private List<Module> Modules = new List<Module>
+    // {
+    //     new Module { Id=1, Name="Databasdesign", Description="Learn DB structure", StartDate=DateTime.Today, EndDate=DateTime.Today.AddDays(7) },
+    //     new Module { Id=2, Name="Javascript", Description="JS basics", StartDate=DateTime.Today.AddDays(8), EndDate=DateTime.Today.AddDays(14) }
+    // };
 
-    // Activity tabs configuration
-    private enum ActivityTab { Info, Submissions, Grades }
-    private ActivityTab CurrentActivityTab = ActivityTab.Info;
-    private List<TabNavigation<ActivityTab>.TabButton<ActivityTab>> ActivityTabList = new()
-    {
-        new() { Label = "Info", TabValue = ActivityTab.Info },
-        new() { Label = "Submissions", TabValue = ActivityTab.Submissions },
-        new() { Label = "Grades", TabValue = ActivityTab.Grades }
-    };
+    // private List<Activity> Activities = new List<Activity>
+    // {
+    //     new Activity { Id=1, Name="E-learning", Type="E-learning", Description="Online lesson", StartTime=DateTime.Today, EndTime=DateTime.Today.AddHours(1) },
+    //     new Activity { Id=2, Name="Lecture", Type="Föreläsning", Description="Instructor session", StartTime=DateTime.Today.AddHours(2), EndTime=DateTime.Today.AddHours(3) }
+    // };
 
-    // Event handlers for Course tabs
-    private Task HandleCourseTabChange(CourseTab newTab)
-    {
-        CurrentCourseTab = newTab;
-        Console.WriteLine($"Course tab changed to: {newTab}");
-        return Task.CompletedTask;
-    }
-
-    private Task ShowCourseDetails()
-    {
-        Console.WriteLine("Show course details clicked!");
-        // Here you could open Info component: <Info CourseId="@courseId" />
-        return Task.CompletedTask;
-    }
-
-    // Event handlers for Module tabs
-    private Task HandleModuleTabChange(ModuleTab newTab)
-    {
-        CurrentModuleTab = newTab;
-        Console.WriteLine($"Module tab changed to: {newTab}");
-        return Task.CompletedTask;
-    }
-
-    private Task ShowModuleDetails()
-    {
-        Console.WriteLine("Show module details clicked!");
-        // Here you could open Info component: <Info ModuleId="@moduleId" />
-        return Task.CompletedTask;
-    }
-
-    // Event handlers for Activity tabs
-    private Task HandleActivityTabChange(ActivityTab newTab)
-    {
-        CurrentActivityTab = newTab;
-        Console.WriteLine($"Activity tab changed to: {newTab}");
-        return Task.CompletedTask;
-    }
-
-    private Task ShowActivityDetails()
-    {
-        Console.WriteLine("Show activity details clicked!");
-        // Here you could open Info component: <Info ActivityId="@activityId" />
-        return Task.CompletedTask;
-    }
-
-    // Test data
-    private CourseVM TestCourse = new()
-    {
-        Id = 1,
-        Name = "Test Course",
-        Description = "This is a test course",
-        StartDate = DateTime.Now,
-        EndDate = DateTime.Now.AddDays(30)
-    };
-
-    private ModuleVM TestModule = new()
-    {
-        Id = 1,
-        Name = "Test Module",
-        Description = "This is a test module",
-        StartDate = DateTime.Now,
-        EndDate = DateTime.Now.AddDays(7)
-    };
-
-    private ActivityVM TestActivity = new()
-    {
-        Id = 1,
-        Name = "Test Activity",
-        Description = "This is a test activity",
-        TypeName = "Lecture",
-        StartDate = DateTime.Now,
-        EndDate = DateTime.Now.AddHours(2),
-        ModuleId = 1
-    };
+    // private void OpenActivity(int activityId)
+    // {
+    //     Console.WriteLine($"Open activity {activityId}");
+    // }
 }
+ *@
