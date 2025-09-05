@@ -1,0 +1,87 @@
+﻿@page "/teacher/course/{CourseId:int}/module/{ModuleId:int}"
+@rendermode InteractiveWebAssembly
+@using LMS.Blazor.Client.Components.Common
+@using LMS.Blazor.Client.Services
+@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager Nav
+@inject NavigationStateService NavState
+@inject IModuleService ModuleService
+@attribute [Authorize(Roles = "Teacher")]
+
+<Loading Show="@isLoading" Message="Loading module..." />
+
+@if (!isLoading)
+{
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+
+                <div class="mb-4">
+                    <h2 class="fw-bold text-primary">@ModuleName</h2>
+                    <p class="text-muted">
+                        <i class="bi bi-calendar-event me-2 text-secondary"></i>
+                        Start: @ModuleStartDate.ToString("yyyy/MM/dd")
+                    </p>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap justify-content-center mb-5">
+                    <button class="btn btn-outline-primary @(SelectedTab == Tab.Activities ? "active" : "")"
+                            @onclick="() => SelectTab(Tab.Activities)">Activities</button>
+                    <button class="btn btn-outline-primary @(SelectedTab == Tab.Documents ? "active" : "")"
+                            @onclick="() => SelectTab(Tab.Documents)">Documents</button>
+                </div>
+
+                <div class="tab-content">
+                    @switch (SelectedTab)
+                    {
+                        case Tab.Activities:
+                            <ModuleActivitiesTeacher ModuleId="@ModuleId" CourseId="@CourseId" />
+                            break;
+                        case Tab.Documents:
+                            <ModuleDocumentsTeacher ModuleId="@ModuleId" />
+                            break;
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    [Parameter] public int ModuleId { get; set; }
+
+    private enum Tab { Activities, Documents }
+    private Tab SelectedTab = Tab.Activities;
+
+    private bool isLoading = true;
+    private string ModuleName = string.Empty;
+    private DateTime ModuleStartDate = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+
+            var module = await ModuleService.GetModuleByIdAsync(ModuleId);
+
+            ModuleName = module?.Title ?? $"Module {ModuleId}";
+            ModuleStartDate = module?.StartDate ?? DateTime.Today;
+
+            NavState.SetModule(ModuleId, ModuleName);
+            NavState.ClearActivity();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading module: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectTab(Tab tab) => SelectedTab = tab;
+}

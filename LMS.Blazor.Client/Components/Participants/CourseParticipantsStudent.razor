@@ -1,9 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Authorization
-@using LMS.Blazor.Client.Services.Interfaces
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
+@using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Models
+@using LMS.Blazor.Client.Components.Common
 @rendermode InteractiveWebAssembly
+
 @inject IParticipantsService ParticipantsService
+
 @attribute [Authorize(Roles = "Student")]
 
 <div class="card shadow-sm mb-5">
@@ -13,81 +17,78 @@
         </h5>
     </div>
     <div class="card-body p-0">
-        @if (isLoading)
-        {
-            <div class="text-center p-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        }
-        else if (participants != null && participants.Any())
-        {
-            <!-- Teacher Section -->
-            @if (teacher != null)
-            {
-                <div class="border-bottom bg-light px-4 py-2">
-                    <small class="text-muted fw-bold">TEACHER</small>
-                </div>
-                <div class="px-4 py-3 border-bottom">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
-                             style="width: 40px; height: 40px;">
-                            <i class="bi bi-person-fill text-white"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0 fw-bold">@teacher.Name</h6>
-                            <small class="text-muted">@teacher.Email</small>
-                        </div>
-                        <span class="badge bg-primary ms-auto">Teacher</span>
-                    </div>
-                </div>
-            }
+        <Loading Show="@isLoading" Message="Loading participants..." />
 
-            <!-- Students Section -->
-            @if (students.Any())
+        @if (!isLoading)
+        {
+            @if (participants != null && participants.Any())
             {
-                <div class="border-bottom bg-light px-4 py-2">
-                    <small class="text-muted fw-bold">CLASSMATES (@(students.Count() - 1))</small>
-                </div>
-
-                @foreach (var student in students.OrderBy(s => IsCurrentUser(s.Id) ? 0 : 1).ThenBy(s => s.Name))
+                <!-- Teacher Section -->
+                @if (teacher != null)
                 {
-                    <div class="px-4 py-3 @(student != students.Last() ? "border-bottom" : "")">
+                    <div class="border-bottom bg-light px-4 py-2">
+                        <small class="text-muted fw-bold">TEACHER</small>
+                    </div>
+                    <div class="px-4 py-3 border-bottom">
                         <div class="d-flex align-items-center">
-                            <div class="@GetStudentAvatarClass(student.Id) rounded-circle d-flex align-items-center justify-content-center me-3"
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
                                  style="width: 40px; height: 40px;">
                                 <i class="bi bi-person-fill text-white"></i>
                             </div>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-0">
-                                    @student.Name
-                                    @if (IsCurrentUser(student.Id))
-                                    {
-                                        <small class="text-muted">(You)</small>
-                                    }
-                                </h6>
-                                <small class="text-muted">@student.Email</small>
+                            <div>
+                                <h6 class="mb-0 fw-bold">@teacher.Name</h6>
+                                <small class="text-muted">@teacher.Email</small>
                             </div>
-                            <span class="badge @GetStudentBadgeClass(student.Id)">
-                                @GetStudentBadgeText(student.Id)
-                            </span>
+                            <span class="badge bg-primary ms-auto">Teacher</span>
                         </div>
                     </div>
                 }
+
+                <!-- Students Section -->
+                @if (students.Any())
+                {
+                    <div class="border-bottom bg-light px-4 py-2">
+                        <small class="text-muted fw-bold">CLASSMATES (@(students.Count() - 1))</small>
+                    </div>
+
+                    @foreach (var student in students.OrderBy(s => IsCurrentUser(s.Id) ? 0 : 1).ThenBy(s => s.Name))
+                    {
+                        <div class="px-4 py-3 @(student != students.Last() ? "border-bottom" : "")">
+                            <div class="d-flex align-items-center">
+                                <div class="@GetStudentAvatarClass(student.Id) rounded-circle d-flex align-items-center justify-content-center me-3"
+                                     style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person-fill text-white"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">
+                                        @student.Name
+                                        @if (IsCurrentUser(student.Id))
+                                        {
+                                            <small class="text-muted">(You)</small>
+                                        }
+                                    </h6>
+                                    <small class="text-muted">@student.Email</small>
+                                </div>
+                                <span class="badge @GetStudentBadgeClass(student.Id)">
+                                    @GetStudentBadgeText(student.Id)
+                                </span>
+                            </div>
+                        </div>
+                    }
+                }
             }
-        }
-        else
-        {
-            <div class="text-center text-muted p-4">
-                <i class="bi bi-people fs-1 mb-2"></i>
-                <p class="mb-0">No participants in this course</p>
-            </div>
+            else
+            {
+                <div class="text-center text-muted p-4">
+                    <i class="bi bi-people fs-1 mb-2"></i>
+                    <p class="mb-0">No participants in this course</p>
+                </div>
+            }
         }
     </div>
 
     <!-- Course Stats Footer -->
-    @if (participants != null && participants.Any())
+    @if (!isLoading && participants != null && participants.Any())
     {
         <div class="card-footer bg-light text-center">
             <small class="text-muted">

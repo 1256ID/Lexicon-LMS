@@ -7,4 +7,5 @@ public class ModuleVM
     public string Description { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public int CourseId { get; set; }
 }

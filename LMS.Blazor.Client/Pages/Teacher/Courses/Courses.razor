@@ -4,9 +4,12 @@
 @using LMS.Blazor.Client.Components.Cards
 @using LMS.Blazor.Client.Services
 @using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Components.Common
+@using Microsoft.AspNetCore.Authorization
 @inject ICourseService CourseService
 @inject NavigationManager Nav
 @inject NavigationStateService NavState
+@attribute [Authorize(Roles = "Teacher")]
 
 <div class="container mt-5">
     <div class="row">
@@ -16,22 +19,38 @@
                 <p class="text-muted">Browse, manage and edit your courses</p>
             </div>
 
-            <div class="row">
-                @foreach (var c in CoursesList)
+            <Loading Show="@isLoading" Message="Loading courses..." />
+
+            @if (!isLoading)
+            {
+                @if (CoursesList != null && CoursesList.Any())
                 {
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-                        <CourseCard Course="c"
-                                    OnOpen="OpenCourse"
-                                    OnEdit="EditCourse" />
+                    <div class="row">
+                        @foreach (var c in CoursesList)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <CourseCard Course="c"
+                                            OnOpen="OpenCourse"
+                                            OnEdit="EditCourse" />
+                            </div>
+                        }
                     </div>
                 }
-            </div>
+                else
+                {
+                    <div class="text-center text-muted p-4">
+                        <i class="bi bi-journal-x fs-1 mb-2"></i>
+                        <p class="mb-0">No courses available</p>
+                    </div>
+                }
+            }
         </div>
     </div>
 </div>
 
 @code {
-    private List<CourseVM> CoursesList;
+    private List<CourseVM> CoursesList = new();
+    private bool isLoading = true;
 
     private void OpenCourse(CourseVM c)
     {
@@ -50,8 +69,19 @@
         NavState.ClearModule();
         NavState.ClearActivity();
 
-        var courses = await CourseService.GetCoursesAsync();
-        CoursesList = courses.ToList();
+        try
+        {
+            isLoading = true;
+            var courses = await CourseService.GetCoursesAsync();
+            CoursesList = courses.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading courses: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }
-
