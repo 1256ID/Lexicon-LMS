@@ -1,6 +1,10 @@
 ﻿@page "/teacher/course/{CourseId:int}/module/{ModuleId:int}"
+
 @rendermode InteractiveWebAssembly
 @using LMS.Blazor.Client.Components.Common
+@using LMS.Blazor.Client.Components.Info
+@using LMS.Blazor.Client.Components.Tabs
+@using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Services
 @using Microsoft.AspNetCore.Authorization
 @inject NavigationManager Nav
@@ -8,6 +12,7 @@
 @inject IModuleService ModuleService
 @attribute [Authorize(Roles = "Teacher")]
 
+<!-- Loading component -->
 <Loading Show="@isLoading" Message="Loading module..." />
 
 @if (!isLoading)
@@ -15,7 +20,6 @@
     <div class="container mt-5">
         <div class="row">
             <div class="col-lg-10 mx-auto">
-
                 <div class="mb-4">
                     <h2 class="fw-bold text-module">@ModuleName</h2>
                     <p class="text-muted">
@@ -24,16 +28,18 @@
                     </p>
                 </div>
 
-                <div class="d-flex gap-2 flex-wrap justify-content-center mb-5">
-                    <button class="btn btn-outline-primary @(SelectedTab == Tab.Activities ? "active" : "")"
-                            @onclick="() => SelectTab(Tab.Activities)">Activities</button>
-                    <button class="btn btn-outline-primary @(SelectedTab == Tab.Documents ? "active" : "")"
-                            @onclick="() => SelectTab(Tab.Documents)">Documents</button>
-                </div>
+                <!-- Tab Navigation Component -->
+                <TabNavigation TTabType="Tab"
+                               SelectedTab="SelectedTab"
+                               OnTabChanged="OnTabChanged"
+                               Buttons="TabButtons" />
 
                 <div class="tab-content">
                     @switch (SelectedTab)
                     {
+                        case Tab.Info:
+                            <Info ModuleId="@ModuleId" />
+                            break;
                         case Tab.Activities:
                             <ModuleActivitiesTeacher ModuleId="@ModuleId" CourseId="@CourseId" />
                             break;
@@ -42,7 +48,6 @@
                             break;
                     }
                 </div>
-
             </div>
         </div>
     </div>
@@ -52,21 +57,28 @@
     [Parameter] public int CourseId { get; set; }
     [Parameter] public int ModuleId { get; set; }
 
-    private enum Tab { Activities, Documents }
-    private Tab SelectedTab = Tab.Activities;
+    // Tab enumeration for module navigation
+    private enum Tab { Info, Activities, Documents }
+    private Tab SelectedTab = Tab.Activities; // Start with Activities tab
 
     private bool isLoading = true;
     private string ModuleName = string.Empty;
     private DateTime ModuleStartDate = DateTime.Today;
+
+    // Tab button configuration for the navigation component
+    private List<TabNavigation<Tab>.TabButton<Tab>> TabButtons = new()
+    {
+        new() { Label = "Info", TabValue = Tab.Info },
+        new() { Label = "Activities", TabValue = Tab.Activities },
+        new() { Label = "Documents", TabValue = Tab.Documents }
+    };
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             isLoading = true;
-
             var module = await ModuleService.GetModuleByIdAsync(ModuleId);
-
             ModuleName = module?.Name ?? $"Module {ModuleId}";
             ModuleStartDate = module?.StartDate ?? DateTime.Today;
 
@@ -83,5 +95,10 @@
         }
     }
 
-    private void SelectTab(Tab tab) => SelectedTab = tab;
+    // Handle tab change event from navigation component
+    private async Task OnTabChanged(Tab newTab)
+    {
+        SelectedTab = newTab;
+    }
 }
+
