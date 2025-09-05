@@ -99,6 +99,33 @@ a, .btn-link {
     color: var(--bs-purple);
 }
 
+/* ========== INFO COMPONENT COLORS ========== */
+.text-course {
+    color: #1b6ec2 !important;
+}
+
+.text-module {
+    color: #198754 !important;
+}
+
+.text-activity {
+    color: #6f42c1 !important;
+}
+
+/* ========== INFO COMPONENT BORDERS ========== */
+.info-header-course {
+    border-left: 4px solid #1b6ec2;
+}
+
+.info-header-module {
+    border-left: 4px solid #198754;
+}
+
+.info-header-activity {
+    border-left: 4px solid #6f42c1;
+}
+
+
 /* ========== TEACHER OVERVIEW ========== */
 .hero-card {
     border-radius: 0.8rem;
@@ -143,6 +170,8 @@ a, .btn-link {
 .form-floating > .form-control:focus ~ label {
     color: #1b6ec2;
 }
+
+
 
 /* ========== SIDEBAR NAVIGATION ========== */
 .nav-item.ps-4 .nav-link {
