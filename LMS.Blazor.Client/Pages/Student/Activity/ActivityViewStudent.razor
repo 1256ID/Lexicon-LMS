@@ -32,7 +32,7 @@
         {
             isLoading = true;
             var activity = await ActivityService.GetActivityByIdAsync(ActivityId);
-            ActivityName = activity?.Title ?? $"Activity {ActivityId}";
+            ActivityName = activity?.Name ?? $"Activity {ActivityId}";
             ActivityDescription = activity?.Description ?? "No description available.";
         }
         catch (Exception ex)

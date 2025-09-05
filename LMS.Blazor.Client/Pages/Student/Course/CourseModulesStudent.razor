@@ -63,7 +63,7 @@
 
     private void OpenModule(ModuleVM m)
     {
-        NavState.SetModule(m.Id, m.Title);
+        NavState.SetModule(m.Id, m.Name);
         Nav.NavigateTo($"/student/course/module/{m.Id}");
     }
 

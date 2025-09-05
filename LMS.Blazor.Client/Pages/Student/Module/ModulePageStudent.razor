@@ -59,7 +59,7 @@
         {
             isLoading = true;
             var module = await ModuleService.GetModuleByIdAsync(ModuleId);
-            ModuleName = module?.Title ?? $"Module {ModuleId}";
+            ModuleName = module?.Name ?? $"Module {ModuleId}";
             ModuleStartDate = module?.StartDate ?? DateTime.Today;
             NavState.SetModule(ModuleId, ModuleName);
             NavState.ClearActivity();

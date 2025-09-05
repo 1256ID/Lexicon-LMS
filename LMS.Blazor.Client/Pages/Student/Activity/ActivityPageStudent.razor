@@ -63,9 +63,9 @@
             isLoading = true;
             var module = await ModuleService.GetModuleByIdAsync(ModuleId);
             var activity = await ActivityService.GetActivityByIdAsync(ActivityId);
-            ActivityName = activity?.Title ?? $"Activity {ActivityId}";
+            ActivityName = activity?.Name ?? $"Activity {ActivityId}";
             ActivityStartDate = activity?.StartDate ?? DateTime.Today;
-            NavState.SetActivity(ModuleId, module?.Title ?? $"Module {ModuleId}", ActivityId, ActivityName);
+            NavState.SetActivity(ModuleId, module?.Name ?? $"Module {ModuleId}", ActivityId, ActivityName);
         }
         finally
         {

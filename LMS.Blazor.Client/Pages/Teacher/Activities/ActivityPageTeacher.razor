@@ -72,12 +72,12 @@
             var module = await ModuleService.GetModuleByIdAsync(ModuleId);
             var activity = await ActivityService.GetActivityByIdAsync(ActivityId);
 
-            ActivityName = activity?.Title ?? $"Activity {ActivityId}";
+            ActivityName = activity?.Name ?? $"Activity {ActivityId}";
             ActivityStartDate = activity?.StartDate ?? DateTime.Today;
 
             var course = await CourseService.GetCourseByIdAsync(CourseId);
-            NavState.SetCourse(CourseId, course?.Title ?? $"Course {CourseId}");
-            NavState.SetActivity(ModuleId, module?.Title ?? $"Module {ModuleId}", ActivityId, ActivityName);
+            NavState.SetCourse(CourseId, course?.Name ?? $"Course {CourseId}");
+            NavState.SetActivity(ModuleId, module?.Name ?? $"Module {ModuleId}", ActivityId, ActivityName);
         }
         catch (Exception ex)
         {
