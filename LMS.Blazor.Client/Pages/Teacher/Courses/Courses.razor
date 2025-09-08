@@ -14,9 +14,20 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-lg-10 mx-auto">
-            <div class="mb-5 text-center">
-                <h2 class="fw-bold text-course">Available Courses</h2>
-                <p class="text-muted">Browse, manage and edit your courses</p>
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h2 class="fw-bold text-course mb-0">Available Courses</h2>
+                    </div>
+                    <div>
+                        <button type="button"
+                                class="btn btn-primary d-flex align-items-center px-3 py-2 shadow-sm"
+                                @onclick="CreateNewCourse"
+                                disabled="@isLoading">
+                            <i class="bi bi-plus-circle me-2"></i>New Course
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <Loading Show="@isLoading" Message="Loading courses..." />
@@ -38,9 +49,17 @@
                 }
                 else
                 {
-                    <div class="text-center text-muted p-4">
-                        <i class="bi bi-journal-x fs-1 mb-2"></i>
-                        <p class="mb-0">No courses available</p>
+                    <div class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="bi bi-journal-x display-1 mb-3 opacity-50"></i>
+                            <h5 class="fw-normal">No courses available yet</h5>
+                            <p class="mb-4">Create your first course to get started!</p>
+                            <button type="button"
+                                    class="btn btn-primary d-flex align-items-center mx-auto px-3 py-2"
+                                    @onclick="CreateNewCourse">
+                                <i class="bi bi-plus-circle me-2"></i>Create Your First Course
+                            </button>
+                        </div>
                     </div>
                 }
             }
@@ -63,12 +82,16 @@
         Nav.NavigateTo($"/teacher/course/edit/{id}");
     }
 
+    private void CreateNewCourse()
+    {
+        Nav.NavigateTo("/teacher/course/new");
+    }
+
     protected override async Task OnInitializedAsync()
     {
         NavState.ClearCourse();
         NavState.ClearModule();
         NavState.ClearActivity();
-
         try
         {
             isLoading = true;

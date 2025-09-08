@@ -1,4 +1,6 @@
-/* ========== BASE STYLES ========== */
+/* ========================================
+   BASE STYLES & TYPOGRAPHY
+   ======================================== */
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -11,37 +13,107 @@ h1:focus {
     padding-top: 1.1rem;
 }
 
-/* ========== LINKS & BUTTONS ========== */
+/* ========================================
+   CSS VARIABLES
+   ======================================== */
+:root {
+    --bs-purple: #6f42c1;
+    --color-course: #1b6ec2;
+    --color-module: #198754;
+    --color-activity: #6f42c1;
+    --color-course-dark: #134c87;
+    --color-module-dark: #146c43;
+    --color-activity-dark: #5a359a;
+}
+
+/* ========================================
+   BUTTONS & LINKS
+   ======================================== */
 a, .btn-link {
     color: #006bb7;
+    transition: all 0.3s ease;
 }
 
     a:hover, .btn-link:hover {
         color: #003d66;
     }
 
+/* Base button transitions */
+.btn {
+    transition: all 0.3s ease;
+}
+
+/* Primary Button */
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
+    background-color: var(--color-course);
     border-color: #1861ac;
 }
 
     .btn-primary:hover {
-        background-color: #134c87;
+        background-color: var(--color-course-dark);
         border-color: #0f3f6e;
         transform: translateY(-1px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
-.btn-primary, a, .btn-link {
+/* Success Button (Module) */
+.btn-success {
     transition: all 0.3s ease;
 }
 
-    .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-        box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    .btn-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
-/* ========== CARDS ========== */
+/* Activity Button */
+.btn-activity {
+    color: #fff !important;
+    background-color: var(--color-activity);
+    border-color: var(--color-activity);
+    transition: all 0.3s ease;
+}
+
+    .btn-activity:hover {
+        color: #fff !important;
+        background-color: var(--color-activity-dark);
+        border-color: var(--color-activity-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-activity:focus,
+    .btn-activity:active:focus {
+        color: #fff !important;
+        box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--color-activity);
+    }
+
+    .btn-activity:disabled {
+        color: #fff !important;
+        background-color: var(--color-activity);
+        border-color: var(--color-activity);
+        opacity: 0.65;
+    }
+
+/* Legacy activity button (outline style) */
+.activity-btn-purple {
+    border-color: var(--bs-purple);
+    color: var(--bs-purple);
+}
+
+/* Focus states for all buttons */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
 .card {
     min-height: 280px;
 }
@@ -55,25 +127,21 @@ a, .btn-link {
     box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
 }
 
-/* ========== CARDS STYLES ========== */
-:root {
-    --bs-purple: #6f42c1;
-}
-
+/* Card Types */
 .course-card {
-    border-left: 4px solid var(--bs-primary);
+    border-left: 4px solid var(--color-course);
     border-radius: 0.8rem;
     transition: all 0.3s ease;
 }
 
 .module-card {
-    border-left: 4px solid var(--bs-success);
+    border-left: 4px solid var(--color-module);
     border-radius: 0.8rem;
     transition: all 0.3s ease;
 }
 
 .activity-card {
-    border-left: 4px solid var(--bs-purple);
+    border-left: 4px solid var(--color-activity);
     border-radius: 0.8rem;
     transition: all 0.3s ease;
 }
@@ -90,90 +158,46 @@ a, .btn-link {
     padding: 0;
 }
 
-.activity-btn-purple {
-    border-color: var(--bs-purple);
-    color: var(--bs-purple);
-}
-
-.activity-text-purple {
-    color: var(--bs-purple);
-}
-
-/* ========== INFO COMPONENT COLORS ========== */
+/* ========================================
+   COLOR SYSTEM
+   ======================================== */
+/* Text Colors */
 .text-course {
-    color: #1b6ec2 !important;
+    color: var(--color-course) !important;
 }
 
 .text-module {
-    color: #198754 !important;
+    color: var(--color-module) !important;
 }
 
 .text-activity {
-    color: #6f42c1 !important;
-}
-
-/* ========== INFO COMPONENT BORDERS ========== */
-.info-header-course {
-    border-left: 4px solid #1b6ec2;
-}
-
-.info-header-module {
-    border-left: 4px solid #198754;
-}
-
-.info-header-activity {
-    border-left: 4px solid #6f42c1;
-}
-
-
-/* ========== TEACHER OVERVIEW ========== */
-.hero-card {
-    border-radius: 0.8rem;
-    background: linear-gradient(135deg, #1b6ec2 0%, #134c87 100%);
+    color: var(--color-activity) !important;
 }
 
 .text-purple {
-    color: #6f42c1 !important;
+    color: var(--color-activity) !important;
 }
 
-.course-item-hover {
-    cursor: pointer;
-    transition: all 0.3s ease;
+.activity-text-purple {
+    color: var(--color-activity);
 }
 
-.position-absolute.translate-middle.badge {
-    top: 0.8rem;
-    left: 2.2rem;
+/* Info Component Borders */
+.info-header-course {
+    border-left: 4px solid var(--color-course);
 }
 
-/* ========== FORMS & VALIDATION ========== */
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+.info-header-module {
+    border-left: 4px solid var(--color-module);
 }
 
-.invalid {
-    outline: 1px solid #e50000;
+.info-header-activity {
+    border-left: 4px solid var(--color-activity);
 }
 
-.validation-message {
-    color: #e50000;
-}
-
-.darker-border-checkbox.form-check-input {
-    border-color: #929292;
-}
-
-.form-floating > label {
-    color: #6c757d;
-}
-
-.form-floating > .form-control:focus ~ label {
-    color: #1b6ec2;
-}
-
-
-
-/* ========== SIDEBAR NAVIGATION ========== */
+/* ========================================
+   NAVIGATION
+   ======================================== */
 .nav-item.ps-4 .nav-link {
     font-size: 0.9em;
     color: #6c757d;
@@ -200,7 +224,8 @@ a, .btn-link {
     padding-top: 0.5rem;
 }
 
-/* ========== BOOTSTRAP ICONS SIDEBAR ========== */
+
+/* Bootstrap Icons for Sidebar */
 .bi-grid-nav-menu {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-grid' viewBox='0 0 16 16'%3E%3Cpath d='M2 2h4v4H2V2zm5 0h4v4H7V2zm5 0h4v4h-4V2zM2 7h4v4H2V7zm5 0h4v4H7V7zm5 0h4v4h-4V7zM2 12h4v4H2v-4zm5 0h4v4H7v-4zm5 0h4v4h-4v-4z'/%3E%3C/svg%3E");
 }
@@ -209,26 +234,63 @@ a, .btn-link {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-book' viewBox='0 0 16 16'%3E%3Cpath d='M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783'/%3E%3C/svg%3E");
 }
 
-/* ========== COURSE / MODULE / ACTIVITY FORM ========== */
-.form-floating .course-description {
-    height: 180px !important;
-    min-height: 180px !important;
-    resize: vertical !important;
+/* ========================================
+   FORMS & VALIDATION
+   ======================================== */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
 }
 
-.module-description {
-    height: 180px !important;
-    min-height: 180px !important;
-    resize: vertical !important;
+.invalid {
+    outline: 1px solid #e50000;
 }
 
+.validation-message {
+    color: #e50000;
+}
+
+.darker-border-checkbox.form-check-input {
+    border-color: #929292;
+}
+
+.form-floating > label {
+    color: #6c757d;
+}
+
+.form-floating > .form-control:focus ~ label {
+    color: var(--color-course);
+}
+
+/* Form Textareas */
+.form-floating .course-description,
+.module-description,
 .activity-description {
     height: 180px !important;
     min-height: 180px !important;
     resize: vertical !important;
 }
 
-/* ========== HOME PAGE ========== */
+/* ========================================
+   TEACHER OVERVIEW
+   ======================================== */
+.hero-card {
+    border-radius: 0.8rem;
+    background: linear-gradient(135deg, var(--color-course) 0%, var(--color-course-dark) 100%);
+}
+
+.course-item-hover {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.position-absolute.translate-middle.badge {
+    top: 0.8rem;
+    left: 2.2rem;
+}
+
+/* ========================================
+   HOME PAGE
+   ======================================== */
 .home-hero {
     position: relative;
     background-image: url('/images/landingPageBg.png');
@@ -270,7 +332,21 @@ a, .btn-link {
         margin-bottom: 1rem;
     }
 
-/* ========== ERROR HANDLING ========== */
+/* ========================================
+   LOGIN PAGE
+   ======================================== */
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+a.text-decoration-none:hover {
+    color: var(--color-course) !important;
+    text-decoration: underline !important;
+}
+
+/* ========================================
+   ERROR HANDLING
+   ======================================== */
 .blazor-error-boundary {
     background: url() no-repeat 1rem/1.8rem, #b32121;
     padding: 1rem 1rem 1rem 3.7rem;
@@ -281,17 +357,9 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
-/* ========== LOGIN PAGE ========== */
-.min-vh-100 {
-    min-height: 100vh;
-}
-
-a.text-decoration-none:hover {
-    color: #1b6ec2 !important;
-    text-decoration: underline !important;
-}
-
-/* ========== RESPONSIVE STYLES ========== */
+/* ========================================
+   RESPONSIVE STYLES
+   ======================================== */
 @media (max-width: 576px) {
     .card {
         min-height: 240px;
