@@ -2,12 +2,12 @@
 
 @rendermode InteractiveWebAssembly
 @inject NavigationManager Navigation
-@inject HttpClient HttpClient
+@inject ICourseService CourseService
 @inject IJSRuntime JSRuntime
-
 @using LMS.Blazor.Client.Components.Forms
+@using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Models
 @using Microsoft.AspNetCore.Authorization
-
 @attribute [Authorize(Roles = "Teacher")]
 
 <PageTitle>Edit Course</PageTitle>
@@ -27,30 +27,39 @@
 
     <div class="row">
         <div class="col-12">
-            <!-- EDIT MODE: with example -  -->
-            <CourseForm HeaderTitle="Edit Course"
-                       SubmitButtonText="Update Course"
-                       ShowDeleteButton="true"
-                       InitialCourseName="Introduction to UI/UX Design"
-                       InitialDescription="Learn the fundamentals of user interface and user experience design. This course covers design principles, wireframing, prototyping, and usability testing."
-                       InitialStartDate="@DateTime.Today.AddDays(-15)"
-                       OnCancel="@HandleCancel"
-                       OnSubmit="@HandleSubmit"
-                       OnDelete="@HandleDelete" />
-
-            <!-- EDIT MODE: with Course model
-            <CourseForm Course="@course"
-                        OnValidSubmit="@HandleSubmit"
-                        OnCancel="@HandleCancel"
-                        OnDelete="@HandleDelete"
-                        HeaderTitle="Edit Course"
-                        HeaderIcon="bi-pencil"
-                        SubmitButtonText="Update Course"
-                        SubmitIcon="bi-check-lg"
-                        ShowDeleteButton="true"
-                        ErrorMessage="@errorMessage"
-                        SuccessMessage="@successMessage"
-                        IsSubmitting="@isSubmitting" />  -->
+            @if (isLoading)
+            {
+                <!-- Loading state -->
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (course == null)
+            {
+                <!-- Course not found state -->
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Course not found.
+                </div>
+            }
+            else
+            {
+                <!-- Edit form -->
+                <CourseForm HeaderTitle="Edit Course"
+                            SubmitButtonText="Update Course"
+                            ShowDeleteButton="true"
+                            InitialCourseName="@course.Name"
+                            InitialDescription="@course.Description"
+                            InitialStartDate="@course.StartDate"
+                            OnCancel="@HandleCancel"
+                            OnSubmit="@HandleSubmit"
+                            OnDelete="@HandleDelete"
+                            ErrorMessage="@errorMessage"
+                            SuccessMessage="@successMessage"
+                            IsSubmitting="@isSubmitting" />
+            }
         </div>
     </div>
 </div>
@@ -58,47 +67,123 @@
 @code {
     [Parameter] public int CourseId { get; set; }
 
-    // Variables for Course model version:
-    // private Course? course;
-    // private bool isLoading = true;
-    // private bool isSubmitting = false;
-    // private string errorMessage = string.Empty;
-    // private string successMessage = string.Empty;
+    // Component state
+    private CourseVM? course;
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
 
-    // Loading method:
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     await LoadCourse();
-    // }
-
-    // private async Task LoadCourse()
-    // {
-    //     var response = await HttpClient.GetAsync($"api/courses/{CourseId}");
-    //     if (response.IsSuccessStatusCode)
-    //     {
-    //         course = await response.Content.ReadFromJsonAsync<Course>();
-    //     }
-    // }
-
-
-    private void HandleSubmit()
+    protected override async Task OnInitializedAsync()
     {
-        Navigation.NavigateTo("/teacher/course");
+        await LoadCourse();
     }
 
+    /// Loads the course data from the service
+    private async Task LoadCourse()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            // Fetch course from service
+            course = await CourseService.GetCourseByIdAsync(CourseId);
+
+            if (course == null)
+            {
+                errorMessage = $"Course with ID {CourseId} not found";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading course: {ex.Message}";
+            course = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+ 
+    private async Task HandleSubmit(CourseFormData formData)
+    {
+        if (course == null) return;
+
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+            StateHasChanged();
+
+            // Update the course object with form data
+            course.Name = formData.Name;
+            course.Description = formData.Description;
+            course.StartDate = formData.StartDate;
+            course.EndDate = formData.EndDate;
+            // TypeId stays the same (not editable in form)
+
+            var updatedCourse = await CourseService.UpdateCourseAsync(course);
+
+            // Show success message
+            successMessage = "Course updated successfully!";
+            StateHasChanged();
+
+            // Wait so user can see success message
+            await Task.Delay(1500);
+
+            // Navigate back to courses list
+            Navigation.NavigateTo("/teacher/course");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating course: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    
     private void HandleCancel()
     {
         Navigation.NavigateTo("/teacher/course");
     }
 
+ 
     private async Task HandleDelete()
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
-            "Are you sure you want to delete this course?");
-        
-        if (confirmed)
+        if (course == null) return;
+
+        // Show confirmation dialog
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
+            $"Are you sure you want to delete the course '{course.Name}'? This action cannot be undone.");
+
+        if (!confirmed) return;
+
+        try
         {
-            Navigation.NavigateTo("/teacher/course");
+            // Call service to delete course - THIS ACTUALLY DELETES THE DATA
+            var success = await CourseService.DeleteCourseAsync(course.Id);
+
+            if (success)
+            {
+                // Navigate back to courses list
+                Navigation.NavigateTo("/teacher/course");
+            }
+            else
+            {
+                errorMessage = "Failed to delete course";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting course: {ex.Message}";
         }
     }
 }
