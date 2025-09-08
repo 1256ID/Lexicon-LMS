@@ -1,4 +1,5 @@
-﻿using LMS.Infractructure.Data;
+﻿using Domain.Contracts;
+using LMS.Infractructure.Data;
 using LMS.Infractructure.Repositories;
 using LMS.Presentation;
 using LMS.Services;
@@ -71,17 +72,6 @@ public static class ServiceExtensions
         })
                 .AddNewtonsoftJson()
                 .AddApplicationPart(typeof(AssemblyReference).Assembly);
-    }
-
-    public static void ConfigureSql(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("ApplicationDbContext") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContext' not found.")));
-    }
-
-    public static void AddRepositories(this IServiceCollection services)
-    {
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 
     public static void AddServiceLayer(this IServiceCollection services)

@@ -2,6 +2,7 @@
 using LMS.Infractructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using LMS.Shared.RoleNames;
 
 namespace LMS.API.Services;
 
@@ -16,8 +17,6 @@ public class DataSeedHostingService : IHostedService
     private readonly ILogger<DataSeedHostingService> logger;
     private UserManager<ApplicationUser> userManager = null!;
     private RoleManager<IdentityRole> roleManager = null!;
-    private const string TeacherRole = "Teacher";
-    private const string StudentRole = "Student";
 
     public DataSeedHostingService(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<DataSeedHostingService> logger)
     {
@@ -44,7 +43,7 @@ public class DataSeedHostingService : IHostedService
 
         try
         {
-            await AddRolesAsync([TeacherRole, StudentRole]);
+            await AddRolesAsync([RoleNames.TeacherRole, RoleNames.StudentRole]);
             await AddDemoUsersAsync();
             await AddUsersAsync(20);
             logger.LogInformation("Seed complete");
@@ -71,22 +70,26 @@ public class DataSeedHostingService : IHostedService
     {
         var teacher = new ApplicationUser
         {
-            UserName = "teacher@test.com",
+            FirstName = "Teacher",
+            LastName = "Test",
+            UserName = "tt614",
             Email = "teacher@test.com"
         };
-        
+
         var student = new ApplicationUser
         {
-            UserName = "student@test.com",
+            FirstName = "Student",
+            LastName = "Test",
+            UserName = "st267",
             Email = "student@test.com"
         };
 
         await AddUserToDb([teacher, student]);
 
-        var teacherRoleResult = await userManager.AddToRoleAsync(teacher, TeacherRole);
+        var teacherRoleResult = await userManager.AddToRoleAsync(teacher, RoleNames.TeacherRole);
         if (!teacherRoleResult.Succeeded) throw new Exception(string.Join("\n", teacherRoleResult.Errors));
 
-        var studentRoleResult = await userManager.AddToRoleAsync(student, StudentRole);
+        var studentRoleResult = await userManager.AddToRoleAsync(student, RoleNames.StudentRole);
         if (!studentRoleResult.Succeeded) throw new Exception(string.Join("\n", studentRoleResult.Errors));
     }
 
