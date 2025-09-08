@@ -1,4 +1,6 @@
 ﻿@page "/teacher/course/{CourseId:int}/module/{ModuleId:int}/activity/edit/{ActivityId:int}"
+
+@rendermode InteractiveWebAssembly
 @inject NavigationManager Navigation
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
@@ -135,12 +137,12 @@
 
     private void HandleSubmit()
     {
-        Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules/{ModuleId}/activities");
+        Navigation.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}");
     }
 
     private void HandleCancel()
     {
-        Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules/{ModuleId}/activities");
+        Navigation.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}");
     }
 
     private async Task HandleDelete()
@@ -150,7 +152,7 @@
 
         if (confirmed)
         {
-            Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules/{ModuleId}/activities");
+            Navigation.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}");
         }
     }
 }

@@ -78,6 +78,7 @@ builder.Services.AddSingleton<ITokenStorage, TokenStorageService>();
 builder.Services.AddScoped<ICourseService, MockCourseService>();
 builder.Services.AddScoped<IModuleService, MockModuleService>();
 builder.Services.AddScoped<IActivityService, MockActivityService>();
+builder.Services.AddScoped<IParticipantsService, MockParticipantsService>();
 
 var app = builder.Build();
 

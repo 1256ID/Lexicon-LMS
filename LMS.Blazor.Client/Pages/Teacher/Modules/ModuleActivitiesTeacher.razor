@@ -60,7 +60,7 @@ else if (!isLoading && (ActivitiesList == null || !ActivitiesList.Any()))
     private void OpenActivity(ActivityVM a)
     {
         var moduleName = NavState.CurrentModuleName ?? $"Module {ModuleId}";
-        NavState.SetActivity(ModuleId, moduleName, a.Id, a.Title);
+        NavState.SetActivity(ModuleId, moduleName, a.Id, a.Name);
         Nav.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}/activity/{a.Id}");
     }
 
