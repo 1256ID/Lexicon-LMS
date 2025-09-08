@@ -1,7 +1,4 @@
-﻿<!-- When you have your Module model, uncomment this:
-<EditForm Model="@Module" OnValidSubmit="@HandleValidSubmit" class="needs-validation" novalidate>
-    <DataAnnotationsValidator />
--->
+﻿@using LMS.Blazor.Client.Models
 
 <div class="card shadow-sm">
     <div class="card-header bg-light border-0 p-4">
@@ -14,9 +11,7 @@
             <div class="col-12 mb-3">
                 <div class="form-floating">
                     <input @bind="moduleName" class="form-control" id="moduleName" name="moduleName" placeholder="Module Name" />
-                    <!-- With model: <InputText @bind-Value="Module.Name" class="form-control" id="moduleName" placeholder="Module Name" /> -->
                     <label for="moduleName">Module Name *</label>
-                    <!-- With model: <ValidationMessage For="@(() => Module.Name)" class="text-danger small" /> -->
                 </div>
             </div>
 
@@ -24,42 +19,36 @@
                 <div class="form-floating">
                     <textarea @bind="moduleDescription" class="form-control module-description" id="moduleDescription" name="moduleDescription"
                               placeholder="Module Description" style="height: 180px; min-height: 180px; resize: vertical;"></textarea>
-                    <!-- With model: <InputTextArea @bind-Value="Module.Description" class="form-control module-description" id="moduleDescription" placeholder="Module Description" /> -->
                     <label for="moduleDescription">Module Description *</label>
-                    <!-- With model: <ValidationMessage For="@(() => Module.Description)" class="text-danger small" /> -->
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
+            <div class="col-12 col-md-3 mb-3">
                 <div class="form-floating">
-                    <input @bind="startDate" type="date" class="form-control" id="moduleStartDate" name="moduleStartDate" />
-                    <!-- With model: <InputDate @bind-Value="Module.StartDate" class="form-control" id="moduleStartDate" /> -->
-                    <label for="moduleStartDate">Start Date *</label>
-                    <!-- With model: <ValidationMessage For="@(() => Module.StartDate)" class="text-danger small" /> -->
+                    <input @bind="startDate" type="date" class="form-control" id="startDate" name="startDate" />
+                    <label for="startDate">Start Date *</label>
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
+            <div class="col-12 col-md-3 mb-3">
                 <div class="form-floating">
-                    <input @bind="endDate" type="date" class="form-control" id="moduleEndDate" name="moduleEndDate" />
-                    <!-- With model: <InputDate @bind-Value="Module.EndDate" class="form-control" id="moduleEndDate" /> -->
-                    <label for="moduleEndDate">End Date *</label>
-                    <!-- With model: <ValidationMessage For="@(() => Module.EndDate)" class="text-danger small" /> -->
+                    <input @bind="endDate" type="date" class="form-control" id="endDate" name="endDate" />
+                    <label for="endDate">End Date *</label>
                 </div>
             </div>
         </div>
 
-        @if (!string.IsNullOrEmpty(errorMessage))
+        @if (!string.IsNullOrEmpty(ErrorMessage))
         {
             <div class="alert alert-danger mt-3" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+                <i class="bi bi-exclamation-triangle me-2"></i>@ErrorMessage
             </div>
         }
 
-        @if (!string.IsNullOrEmpty(successMessage))
+        @if (!string.IsNullOrEmpty(SuccessMessage))
         {
             <div class="alert alert-success mt-3" role="alert">
-                <i class="bi bi-check-circle me-2"></i>@successMessage
+                <i class="bi bi-check-circle me-2"></i>@SuccessMessage
             </div>
         }
     </div>
@@ -76,9 +65,8 @@
                         <i class="bi bi-trash me-2"></i>Delete
                     </button>
                 }
-                <button type="button" class="btn btn-success" @onclick="HandleSubmit" disabled="@isSubmitting">
-                    <!-- With model: <button type="submit" class="btn btn-success" disabled="@isSubmitting"> -->
-                    @if (isSubmitting)
+                <button type="button" class="btn btn-success" @onclick="HandleSubmit" disabled="@IsSubmitting">
+                    @if (IsSubmitting)
                     {
                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                     }
@@ -93,36 +81,34 @@
     </div>
 </div>
 
-<!-- Close EditForm when you have your model:
-</EditForm>
--->
 @code {
-    // ===== COMPONENT PARAMETERS =====
+    // COMPONENT PARAMETERS
     [Parameter] public string HeaderTitle { get; set; } = "Module Information";
     [Parameter] public string SubmitButtonText { get; set; } = "Save Module";
     [Parameter] public bool ShowDeleteButton { get; set; } = false;
+
+    // EVENT CALLBACKS - UPDATED TO PASS DATA
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
-    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public EventCallback<ModuleFormData> OnSubmit { get; set; }  
 
-    // ===== PARAMETERS FOR PRE-FILLING =====
+    // INITIAL VALUES (for edit mode)
     [Parameter] public string? InitialModuleName { get; set; }
     [Parameter] public string? InitialDescription { get; set; }
     [Parameter] public DateTime? InitialStartDate { get; set; }
     [Parameter] public DateTime? InitialEndDate { get; set; }
 
-    // ===== FORM VARIABLES =====
+    // STATE (controlled by parent) - UPDATED
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public string? SuccessMessage { get; set; }
+    [Parameter] public bool IsSubmitting { get; set; }
+
+    // FORM FIELDS
     private string moduleName = "";
     private string moduleDescription = "";
     private DateTime startDate = DateTime.Today;
     private DateTime endDate = DateTime.Today.AddDays(14);
 
-    // ===== STATE VARIABLES =====
-    private bool isSubmitting = false;
-    private string errorMessage = "";
-    private string successMessage = "";
-
-    // ===== INITIALIZATION =====
     protected override void OnInitialized()
     {
         if (!string.IsNullOrEmpty(InitialModuleName))
@@ -138,32 +124,27 @@
             endDate = InitialEndDate.Value;
     }
 
-    // ===== FORM METHODS (EXACTLY LIKE CourseForm) =====
-    private void HandleSubmit()  // Synchronous, no async
+    // UPDATED TO PASS DATA
+    private async Task HandleSubmit()
     {
-        if (string.IsNullOrWhiteSpace(moduleName))
+        if (string.IsNullOrWhiteSpace(moduleName) ||
+            string.IsNullOrWhiteSpace(moduleDescription) ||
+            endDate <= startDate)
         {
-            errorMessage = "Module name is required";
             return;
         }
 
-        if (endDate <= startDate)
+        var formData = new ModuleFormData
         {
-            errorMessage = "End date must be after start date";
-            return;
-        }
+            Name = moduleName.Trim(),
+            Description = moduleDescription.Trim(),
+            StartDate = startDate,
+            EndDate = endDate
+        };
 
-        errorMessage = "";
-        OnSubmit.InvokeAsync();  
+        await OnSubmit.InvokeAsync(formData);
     }
 
-    private void HandleCancel()  
-    {
-        OnCancel.InvokeAsync();
-    }
-
-    private void HandleDelete()  
-    {
-        OnDelete.InvokeAsync();
-    }
+    private async Task HandleCancel() => await OnCancel.InvokeAsync();
+    private async Task HandleDelete() => await OnDelete.InvokeAsync();
 }

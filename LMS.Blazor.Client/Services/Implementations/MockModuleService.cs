@@ -6,7 +6,7 @@ namespace LMS.Blazor.Client.Services.Implementations;
 public class MockModuleService : IModuleService
 {
 
-private readonly List<ModuleVM> _modules = new()
+private static readonly List<ModuleVM> _modules = new()
 {
     // Modules for C# Fundamentals (CourseId = 1)
     new()
@@ -199,12 +199,70 @@ private readonly List<ModuleVM> _modules = new()
     }
 };
 
-public Task<IEnumerable<ModuleVM>> GetModulesByCourseIdAsync(int courseId)
-        => Task.FromResult(_modules.Where(m => m.CourseId == courseId).AsEnumerable());
+    // Counter for generating new IDs
+    private static int _nextId = 16;
 
-   
+    public Task<IEnumerable<ModuleVM>> GetModulesAsync()
+        => Task.FromResult(_modules.AsEnumerable());
+
+    public Task<IEnumerable<ModuleVM>> GetModulesByCourseIdAsync(int courseId)
+        => Task.FromResult(_modules.Where(m => m.CourseId == courseId));
 
     public Task<ModuleVM?> GetModuleByIdAsync(int id)
         => Task.FromResult(_modules.FirstOrDefault(m => m.Id == id));
+
+    // CREATE 
+    public async Task<ModuleVM> CreateModuleAsync(ModuleVM module)
+    {
+        await Task.Delay(600);
+
+        // Generate new ID
+        module.Id = _nextId++;
+
+        module.ActivityCount = 0; 
+
+        
+        _modules.Add(module);
+
+        return module;
+    }
+
+    // UPDATE 
+    public async Task<ModuleVM> UpdateModuleAsync(ModuleVM module)
+    {
+        await Task.Delay(500);
+
+        // Find existing module
+        var existingModule = _modules.FirstOrDefault(m => m.Id == module.Id);
+        if (existingModule == null)
+        {
+            throw new InvalidOperationException($"Module with ID {module.Id} not found");
+        }
+
+        // Update modifiable properties
+        existingModule.Name = module.Name;
+        existingModule.Description = module.Description;
+        existingModule.StartDate = module.StartDate;
+        existingModule.EndDate = module.EndDate;
+        existingModule.CourseId = module.CourseId;
+
+        return existingModule;
+    }
+
+    // DELETE 
+    public async Task<bool> DeleteModuleAsync(int id)
+    {
+        await Task.Delay(400);
+
+        var module = _modules.FirstOrDefault(m => m.Id == id);
+        if (module == null)
+        {
+            return false; 
+        }
+
+        _modules.Remove(module);
+        return true; 
+    }
 }
+
 
