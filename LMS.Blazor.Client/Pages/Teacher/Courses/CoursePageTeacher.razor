@@ -1,10 +1,13 @@
 ﻿@page "/teacher/course/{CourseId:int}"
+
 @rendermode InteractiveWebAssembly
 @using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Services.Interfaces
 @using LMS.Blazor.Client.Services
 @using LMS.Blazor.Client.Components.Common
 @using LMS.Blazor.Client.Components.Participants
+@using LMS.Blazor.Client.Components.Tabs
+@using LMS.Blazor.Client.Components.Info
 @using Microsoft.AspNetCore.Authorization
 @inject ICourseService CourseService
 @inject NavigationStateService NavState
@@ -28,30 +31,19 @@
             {
                 @if (course != null)
                 {
-                    <!-- Tabs -->
-                    <div class="d-flex gap-2 flex-wrap justify-content-center mb-5">
-                        <button class="btn btn-outline-primary @(SelectedTab == Tab.Modules ? "active" : "")"
-                                @onclick="() => SelectTab(Tab.Modules)">
-                            Modules
-                        </button>
-                        <button class="btn btn-outline-primary @(SelectedTab == Tab.Documents ? "active" : "")"
-                                @onclick="() => SelectTab(Tab.Documents)">
-                            Documents
-                        </button>
-                        <button class="btn btn-outline-primary @(SelectedTab == Tab.Participants ? "active" : "")"
-                                @onclick="() => SelectTab(Tab.Participants)">
-                            Participants
-                        </button>
-                        <button class="btn btn-outline-primary @(SelectedTab == Tab.Schedule ? "active" : "")"
-                                @onclick="() => SelectTab(Tab.Schedule)">
-                            Schedule
-                        </button>
-                    </div>
+                    <!-- Tab Navigation Component -->
+                    <TabNavigation TTabType="Tab"
+                                   SelectedTab="SelectedTab"
+                                   OnTabChanged="OnTabChanged"
+                                   Buttons="TabButtons" />
 
                     <!-- Tab Content -->
                     <div class="tab-content">
                         @switch (SelectedTab)
                         {
+                            case Tab.Info:
+                                <Info CourseId="@CourseId" />
+                                break;
                             case Tab.Modules:
                                 <CourseModulesTeacher CourseId="@CourseId" />
                                 break;
@@ -85,8 +77,18 @@
     private CourseVM? course;
     private bool isLoading = true;
 
-    private enum Tab { Modules, Documents, Participants, Schedule }
+    private enum Tab { Info, Modules, Documents, Participants, Schedule }
     private Tab SelectedTab = Tab.Modules;
+
+    // Tab button configuration for the navigation component
+    private List<TabNavigation<Tab>.TabButton<Tab>> TabButtons = new()
+    {
+        new() { Label = "Info", TabValue = Tab.Info },
+        new() { Label = "Modules", TabValue = Tab.Modules },
+        new() { Label = "Documents", TabValue = Tab.Documents },
+        new() { Label = "Participants", TabValue = Tab.Participants },
+        new() { Label = "Schedule", TabValue = Tab.Schedule }
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,6 +115,10 @@
         }
     }
 
-
-    private void SelectTab(Tab tab) => SelectedTab = tab;
+    // Handle tab change event from navigation component
+    private async Task OnTabChanged(Tab newTab)
+    {
+        SelectedTab = newTab;
+    }
 }
+

@@ -1,0 +1,37 @@
+﻿@typeparam TTabType where TTabType : Enum
+
+<div class="d-flex justify-content-center mb-4 flex-wrap" style="gap: 1rem;">
+    @foreach (var btn in Buttons)
+    {
+        <button class="btn @GetButtonClass(btn.TabValue) col-auto" @onclick="() => SelectTab(btn.TabValue)">
+            @btn.Label
+        </button>
+    }
+
+</div>
+
+@code {
+    [Parameter] public TTabType SelectedTab { get; set; }
+    [Parameter] public EventCallback<TTabType> OnTabChanged { get; set; }
+    [Parameter] public EventCallback OnDetailsClick { get; set; }
+    [Parameter] public List<TabButton<TTabType>> Buttons { get; set; } = new();
+
+    // Handle tab selection and notify parent component
+    private async Task SelectTab(TTabType tab)
+    {
+        SelectedTab = tab;
+        await OnTabChanged.InvokeAsync(tab);
+    }
+
+    private string GetButtonClass(TTabType tab)
+    {
+        var isActive = EqualityComparer<TTabType>.Default.Equals(SelectedTab, tab);
+        return $"btn-primary {(isActive ? "active" : "")}";
+    }
+
+    public class TabButton<T> where T : Enum
+    {
+        public string Label { get; set; }
+        public T TabValue { get; set; }
+    }
+}
