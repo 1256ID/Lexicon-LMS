@@ -44,7 +44,7 @@
         {
             isLoading = true;
             var modules = await ModuleService.GetModulesByCourseIdAsync(CourseId);
-            ModulesList = modules.ToList();
+            ModulesList = modules.OrderBy(m => m.StartDate).ToList();
         }
         catch (Exception ex)
         {
