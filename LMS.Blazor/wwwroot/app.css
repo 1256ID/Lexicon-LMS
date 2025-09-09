@@ -112,7 +112,7 @@ a, .btn-link {
 }
 
 /* ========================================
-   CARDS
+   CARDS & PADDING IMPROVEMENTS
    ======================================== */
 .card {
     min-height: 280px;
@@ -125,6 +125,26 @@ a, .btn-link {
 
 .shadow-lg {
     box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
+
+.card-body {
+    padding: 1.5rem !important;
+}
+
+.card-header {
+    padding: 1rem 1.5rem !important;
+}
+
+.card .card-body.p-2 {
+    padding: 1.25rem !important;
+}
+
+.card .card-header.p-2 {
+    padding: 0.75rem 1.25rem !important;
+}
+
+.hero-card .card-body {
+    padding: 1.5rem !important;
 }
 
 /* Card Types */
@@ -156,6 +176,46 @@ a, .btn-link {
     width: 28px;
     height: 28px;
     padding: 0;
+}
+
+/* ========================================
+   OVERVIEW SPECIFIC PADDING FIXES
+   ======================================== */
+
+/* Upcoming deadlines component padding */
+.upcoming-deadlines .card-body,
+.upcoming-deadlines .card-header {
+    padding: 1.25rem !important;
+}
+
+/* Today's activities padding */
+.today-activities .card-body {
+    padding: 1.25rem !important;
+}
+
+.today-activities .card-header {
+    padding: 0.75rem 1.25rem !important;
+}
+
+/* Activity items within cards */
+.border-start.border-2.border-primary.ps-2 {
+    padding-left: 1rem !important;
+    margin-bottom: 1rem !important;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+/* List group items in deadlines */
+.list-group-item {
+    padding: 0.75rem 1rem !important;
+}
+
+/* Course items in My Courses section */
+.course-item-hover {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 1rem !important;
+    margin-bottom: 0.75rem !important;
 }
 
 /* ========================================
@@ -224,7 +284,6 @@ a, .btn-link {
     padding-top: 0.5rem;
 }
 
-
 /* Bootstrap Icons for Sidebar */
 .bi-grid-nav-menu {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-grid' viewBox='0 0 16 16'%3E%3Cpath d='M2 2h4v4H2V2zm5 0h4v4H7V2zm5 0h4v4h-4V2zM2 7h4v4H2V7zm5 0h4v4H7V7zm5 0h4v4h-4V7zM2 12h4v4H2v-4zm5 0h4v4H7v-4zm5 0h4v4h-4v-4z'/%3E%3C/svg%3E");
@@ -276,11 +335,6 @@ a, .btn-link {
 .hero-card {
     border-radius: 0.8rem;
     background: linear-gradient(135deg, var(--color-course) 0%, var(--color-course-dark) 100%);
-}
-
-.course-item-hover {
-    cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .position-absolute.translate-middle.badge {
@@ -363,6 +417,15 @@ a.text-decoration-none:hover {
 @media (max-width: 576px) {
     .card {
         min-height: 240px;
+    }
+
+    /* Maintain good padding on mobile */
+    .card-body {
+        padding: 1rem !important;
+    }
+
+    .card-header {
+        padding: 0.75rem 1rem !important;
     }
 }
 

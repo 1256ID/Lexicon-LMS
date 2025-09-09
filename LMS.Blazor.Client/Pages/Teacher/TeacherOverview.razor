@@ -1,0 +1,294 @@
+﻿@page "/teacher/overview"
+@rendermode InteractiveWebAssembly
+
+@inject NavigationManager Navigation
+@inject ICourseService CourseService
+@inject IModuleService ModuleService
+@inject IActivityService ActivityService
+
+@using System.Text.Json
+@using LMS.Blazor.Client.Components.Overviews
+@using LMS.Blazor.Client.Components.Common
+@using LMS.Blazor.Client.Models
+@using LMS.Blazor.Client.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@attribute [Authorize]
+
+<AuthorizeView Roles="Teacher">
+    <Authorized>
+        <div class="content">
+            <!-- Loading or Hero Section -->
+            @if (isLoading)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <Loading Show="true" Message="Loading your dashboard..." />
+                    </div>
+                </div>
+            }
+            else
+            {
+                <HeroSection WelcomeMessage="@($"Welcome, {context.User.Identity?.Name}")"
+                             StatIcon="bi-people-fill"
+                             StatValue="@(dashboardData?.TotalStudents.ToString() ?? "0")"
+                             StatLabel="active students" />
+            }
+
+            <!-- Top Row: 3 Cards - Reduced height -->
+            <div class="row mb-3 g-2">
+                <div class="col-4">
+                    <div class="card shadow-sm hover-card text-center"
+                         @onclick="@(() => Navigation.NavigateTo("/teacher/course"))"
+                         style="cursor: pointer; height: 110px;">
+                        <div class="card-body p-2 d-flex flex-column justify-content-center">
+                            @if (isLoading)
+                            {
+                                <Loading Show="true" />
+                            }
+                            else
+                            {
+                                <i class="bi bi-book text-primary fs-4 mb-1"></i>
+                                <div class="fw-bold text-primary">@dashboardData?.ActiveCourses</div>
+                                <small class="text-muted">@GetCoursesLabel()</small>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card shadow-sm hover-card text-center" style="height: 110px;">
+                        <div class="card-body p-2 d-flex flex-column justify-content-center">
+                            @if (isLoading)
+                            {
+                                <Loading Show="true" />
+                            }
+                            else
+                            {
+                                <i class="bi bi-file-earmark-text text-success fs-4 mb-1"></i>
+                                <div class="fw-bold text-success">@dashboardData?.TotalModules</div>
+                                <small class="text-muted">Total Modules</small>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card shadow-sm" style="height: 110px;">
+                        <div class="card-body p-2 d-flex flex-column justify-content-center align-items-center">
+                            @if (isLoading)
+                            {
+                                <Loading Show="true" />
+                            }
+                            else
+                            {
+                                <div class="fw-bold text-primary mb-2">
+                                    <i class="bi bi-lightning me-1"></i>Quick Action
+                                </div>
+                                <button class="btn btn-primary btn-sm px-3 py-1" @onclick="@(() => Navigation.NavigateTo("/teacher/course/new"))">
+                                    <i class="bi bi-plus-circle me-1"></i>Create Course
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="row g-3 teacher-overview">
+                <!-- Left Column -->
+                <div class="col-12 col-md-6">
+                    <!-- Today's Activities -->
+                    <div class="card shadow-sm mb-3 today-activities">
+                        <div class="card-header bg-light border-0 p-2">
+                            <small class="fw-bold text-primary">
+                                <i class="bi bi-calendar-day me-1"></i>Today's Activities
+                            </small>
+                        </div>
+                        <div class="card-body p-2">
+                            @if (isLoading)
+                            {
+                                <Loading Show="true" Message="Loading activities..." />
+                            }
+                            else if (dashboardData?.TodayActivitiesList != null && dashboardData.TodayActivitiesList.Any())
+                            {
+                                @foreach (var activity in dashboardData.TodayActivitiesList.Take(3))
+                                {
+                                    <div class="border-start border-2 border-primary ps-2 mb-2">
+                                        <div class="row g-1">
+                                            <div class="col-9">
+                                                <div class="fw-bold small">@activity.Name</div>
+                                                <div class="text-muted small">
+                                                    <i class="bi bi-clock me-1"></i>@activity.StartDate.ToString("HH:mm") - @activity.EndDate.ToString("HH:mm")
+                                                </div>
+                                                <div class="small">@activity.Description</div>
+                                            </div>
+                                            <div class="col-3 text-end">
+                                                <span class="badge bg-light text-dark small">@activity.TypeName</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-calendar-x fs-4"></i>
+                                    <div class="small">No activities scheduled for today</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Deadlines -->
+                    <UpcomingDeadLines Title="Upcoming Deadlines"
+                                       IconClass="bi-alarm"
+                                       Courses="@(dashboardData?.ActiveCoursesForDeadlines ?? new List<CourseVM>())"
+                                       IsListFormat="false"
+                                       ShowBadges="true"
+                                       EmptyMessage="No upcoming deadlines"
+                                       EmptyIcon="bi-check-circle" />
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-12 col-md-6 teacher-overview-right-column">
+                    <!-- My Courses -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light border-0 p-2">
+                            <small class="fw-bold text-primary">
+                                <i class="bi bi-book me-1"></i>My Courses
+                            </small>
+                        </div>
+                        <div class="card-body p-2">
+                            <div class="my-courses-content">
+                                @if (isLoading)
+                                {
+                                    <Loading Show="true" Message="Loading courses..." />
+                                }
+                                else if (dashboardData?.TeacherCourses != null && dashboardData.TeacherCourses.Any())
+                                {
+                                    @foreach (var course in dashboardData.TeacherCourses)
+                                    {
+                                        <div class="border rounded p-2 mb-2 hover-card course-item-hover"
+                                             @onclick="@(() => Navigation.NavigateTo($"/teacher/course/{course.Id}"))"
+                                             style="cursor: pointer;">
+                                            <div class="fw-bold text-primary small">@course.Name</div>
+                                            <div class="text-muted small">
+                                                <i class="bi bi-people me-1"></i>@course.StudentCount students
+                                            </div>
+                                            <div class="text-muted small">
+                                                <i class="bi bi-calendar3 me-1"></i>@course.StartDate.ToString("MM/dd/yyyy")
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-center text-muted py-3">
+                                        <i class="bi bi-book fs-4"></i>
+                                        <div class="small">No assigned courses</div>
+                                    </div>
+                                }
+                            </div>
+                            @if (!isLoading && dashboardData?.TeacherCourses != null && dashboardData.TeacherCourses.Any())
+                            {
+                                <div class="text-end mt-auto pt-2">
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="@(() => Navigation.NavigateTo("/teacher/course"))">
+                                        View All <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-5"></div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="content">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Access Denied</h4>
+                <p>You must be logged in as a Teacher to access this page.</p>
+                <hr>
+                <p class="mb-0">Please <a href="/login" class="alert-link">login</a> with your teacher credentials.</p>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private TeacherOverviewDto? dashboardData;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOverviewData();
+    }
+
+    private async Task LoadOverviewData()
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            // Artificial delay to see loading (remove in production)
+            await Task.Delay(500);
+
+            //  data from mock services
+            var coursesTask = CourseService.GetCoursesAsync();
+            var modulesTask = ModuleService.GetModulesAsync();
+            var activitiesTask = ActivityService.GetActivitiesAsync();
+
+            await Task.WhenAll(coursesTask, modulesTask, activitiesTask);
+
+            var courses = await coursesTask;
+            var modules = await modulesTask;
+            var activities = await activitiesTask;
+
+            // Calculate statistics -
+            var allCourses = courses.ToList();
+            var activeCourses = courses.Where(c => c.StartDate <= DateTime.Now && c.EndDate >= DateTime.Now).ToList();
+            var todayActivities = activities.Where(a => a.StartDate.Date == DateTime.Today).ToList();
+
+            // Build DTO with explicit conversions
+            dashboardData = new TeacherOverviewDto
+            {
+                TotalStudents = activeCourses.Sum(c => c.StudentCount ?? 0),
+                ActiveCourses = activeCourses.Count(),
+                TotalModules = modules.Count(),
+                TodayActivitiesList = todayActivities.ToList(),
+                TeacherCourses = allCourses.ToList(),
+                ActiveCoursesForDeadlines = activeCourses.ToList()
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading overview data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetCoursesLabel()
+    {
+        if (dashboardData?.ActiveCourses == null) return "Active Courses";
+        return dashboardData.ActiveCourses == 1 ? "Active Course" : "Active Courses";
+    }
+
+    // Simplified DTO classes
+    public class TeacherOverviewDto
+    {
+        public int TotalStudents { get; set; }
+        public int ActiveCourses { get; set; }
+        public int TotalModules { get; set; }
+        public List<ActivityVM> TodayActivitiesList { get; set; } = new();
+        public List<CourseVM> TeacherCourses { get; set; } = new();
+        public List<CourseVM> ActiveCoursesForDeadlines { get; set; } = new();
+    }
+}

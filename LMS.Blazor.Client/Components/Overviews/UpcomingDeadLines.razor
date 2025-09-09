@@ -1,32 +1,33 @@
-﻿
+﻿@using LMS.Blazor.Client.Models
+
 <div class="card shadow-sm @(FullHeight ? "h-100" : "")">
-    <div class="card-header bg-light border-0 p-4">
-        <h5 class="fw-bold mb-0 text-primary">
-            <i class="bi @IconClass me-2"></i>@Title
-        </h5>
+    <div class="card-header bg-light border-0 p-2">
+        <small class="fw-bold text-primary">
+            <i class="bi @IconClass me-1"></i>@Title
+        </small>
     </div>
-    <div class="card-body p-4">
-        @if (Items != null && Items.Any())
+    <div class="card-body p-2">
+        @if (displayItems.Any())
         {
             @if (IsListFormat)
             {
-                <!-- list - student -->
+                <!-- List format - for students -->
                 <ul class="list-group list-group-flush">
-                    @foreach (var item in Items.Take(MaxItems))
+                    @foreach (var item in displayItems.Take(MaxItems))
                     {
-                        <li class="list-group-item px-0">
+                        <li class="list-group-item px-0 py-1">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="mb-1">@GetItemTitle(item)</h6>
-                                    @if (!string.IsNullOrEmpty(GetItemSubtitle(item)))
+                                    <div class="fw-bold small">@item.Title</div>
+                                    @if (!string.IsNullOrEmpty(item.Subtitle))
                                     {
-                                        <small class="text-muted">@GetItemSubtitle(item)</small>
+                                        <small class="text-muted">@item.Subtitle</small>
                                     }
                                 </div>
-                                @if (ShowBadges && GetItemDate(item) != null)
+                                @if (ShowBadges && item.Date != null)
                                 {
-                                    <span class="badge @GetBadgeClass(item)">
-                                        @GetItemDate(item)?.ToString("MM/dd")
+                                    <span class="badge @item.BadgeClass small">
+                                        @item.Date?.ToString("MM/dd")
                                     </span>
                                 }
                             </div>
@@ -36,22 +37,22 @@
             }
             else
             {
-                <!-- flex - teacher -->
-                @foreach (var item in Items.Take(MaxItems))
+                <!-- Flex format - for teachers -->
+                @foreach (var item in displayItems.Take(MaxItems))
                 {
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
                         <div>
-                            <h6 class="mb-1">@GetItemTitle(item)</h6>
-                            @if (!string.IsNullOrEmpty(GetItemSubtitle(item)))
+                            <div class="fw-bold small">@item.Title</div>
+                            @if (!string.IsNullOrEmpty(item.Subtitle))
                             {
-                                <small class="text-muted">@GetItemSubtitle(item)</small>
+                                <small class="text-muted">@item.Subtitle</small>
                             }
                         </div>
                         <div class="text-end">
-                            @if (ShowBadges && GetItemDate(item) != null)
+                            @if (ShowBadges && item.Date != null)
                             {
-                                <span class="badge @GetBadgeClass(item)">
-                                    @GetItemDate(item)?.ToString("MM/dd")
+                                <span class="badge @item.BadgeClass small">
+                                    @item.Date?.ToString("MM/dd")
                                 </span>
                             }
                         </div>
@@ -59,9 +60,9 @@
                 }
             }
 
-            @if (ShowViewAllButton && Items.Count() > MaxItems)
+            @if (ShowViewAllButton && displayItems.Count() > MaxItems)
             {
-                <div class="text-end mt-3">
+                <div class="text-end mt-2">
                     <button class="btn btn-outline-primary btn-sm" @onclick="OnViewAllClick">
                         @ViewAllText <i class="bi bi-arrow-right"></i>
                     </button>
@@ -71,7 +72,7 @@
         else
         {
             <div class="text-center text-muted py-4">
-                <i class="bi @EmptyIcon fs-1 mb-2"></i>
+                <i class="bi @EmptyIcon fs-3 mb-2"></i>
                 <p class="mb-0">@EmptyMessage</p>
             </div>
         }
@@ -81,22 +82,78 @@
 @code {
     [Parameter] public string Title { get; set; } = "Upcoming Items";
     [Parameter] public string IconClass { get; set; } = "bi-alarm";
-    [Parameter] public IEnumerable<object> Items { get; set; } = new List<object>();
     [Parameter] public int MaxItems { get; set; } = 5;
     [Parameter] public bool FullHeight { get; set; } = false;
-    [Parameter] public bool IsListFormat { get; set; } = false; // true for student, false for teacher
+    [Parameter] public bool IsListFormat { get; set; } = false;
     [Parameter] public bool ShowBadges { get; set; } = true;
     [Parameter] public bool ShowViewAllButton { get; set; } = false;
     [Parameter] public string ViewAllText { get; set; } = "View All";
     [Parameter] public string EmptyMessage { get; set; } = "No upcoming items";
     [Parameter] public string EmptyIcon { get; set; } = "bi-check-circle";
-
-    // Events
     [Parameter] public EventCallback OnViewAllClick { get; set; }
 
-    // Functions to extract properties from items
-    [Parameter] public Func<object, string> GetItemTitle { get; set; } = item => item.ToString();
-    [Parameter] public Func<object, string> GetItemSubtitle { get; set; } = item => "";
-    [Parameter] public Func<object, DateTime?> GetItemDate { get; set; } = item => null;
-    [Parameter] public Func<object, string> GetBadgeClass { get; set; } = item => "bg-primary";
+    // Parameters for both usage modes
+    [Parameter] public IEnumerable<object>? Items { get; set; }
+    [Parameter] public List<CourseVM>? Courses { get; set; }
+
+    // Conversion functions for Student mode
+    [Parameter] public Func<object, string>? GetItemTitle { get; set; }
+    [Parameter] public Func<object, string>? GetItemSubtitle { get; set; }
+    [Parameter] public Func<object, DateTime?>? GetItemDate { get; set; }
+    [Parameter] public Func<object, string>? GetBadgeClass { get; set; }
+
+    private List<DisplayItem> displayItems = new();
+
+    protected override void OnParametersSet()
+    {
+        displayItems.Clear();
+
+        // Student Mode: use Items with conversion functions
+        if (Items != null && Items.Any() && GetItemTitle != null)
+        {
+            foreach (var item in Items)
+            {
+                displayItems.Add(new DisplayItem
+                {
+                    Title = GetItemTitle(item),
+                    Subtitle = GetItemSubtitle?.Invoke(item) ?? "",
+                    Date = GetItemDate?.Invoke(item),
+                    BadgeClass = GetBadgeClass?.Invoke(item) ?? "bg-primary"
+                });
+            }
+        }
+        // Teacher Mode: use Courses to generate deadlines
+        else if (Courses != null && Courses.Any())
+        {
+            var courseDeadlines = new List<DisplayItem>();
+
+            foreach (var course in Courses)
+            {
+                var endDate = course.EndDate;
+                var daysUntil = (endDate - DateTime.Today).TotalDays;
+
+                var badgeClass = "bg-primary";
+                if (daysUntil <= 7) badgeClass = "bg-warning";
+                if (daysUntil <= 3) badgeClass = "bg-danger";
+
+                courseDeadlines.Add(new DisplayItem
+                {
+                    Title = $"Course: {course.Name}",
+                    Subtitle = $"End Date",
+                    Date = endDate,
+                    BadgeClass = badgeClass
+                });
+            }
+
+            displayItems = courseDeadlines.OrderBy(d => d.Date).ToList();
+        }
+    }
+
+    public class DisplayItem
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Subtitle { get; set; } = string.Empty;
+        public DateTime? Date { get; set; }
+        public string BadgeClass { get; set; } = "bg-primary";
+    }
 }
