@@ -13,7 +13,6 @@ public class ApplicationUser : IdentityUser
     //[Required]
     //[ForeignKey("CourseId")]
     //public Guid CourseId { get; set; }
-    public string? Role { get; set; } = string.Empty;
     public string? RefreshToken { get; set; }
     public DateTime RefreshTokenExpireTime { get; set; }
 }

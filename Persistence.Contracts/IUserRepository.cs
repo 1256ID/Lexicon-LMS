@@ -1,9 +1,6 @@
 ﻿using LMS.Shared.DTOs;
 using LMS.Shared.DTOs.AuthDtos;
 using LMS.Shared.DTOs.User;
-using Domain.Models.Entities;
-
-
 namespace Persistence.Contracts;
 
 public interface IUserRepository

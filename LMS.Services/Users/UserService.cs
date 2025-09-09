@@ -1,5 +1,4 @@
-﻿using Domain.Models.Entities;
-using LMS.Shared.DTOs;
+﻿using LMS.Shared.DTOs;
 using LMS.Shared.DTOs.AuthDtos;
 using LMS.Shared.DTOs.User;
 using Persistence.Contracts;
