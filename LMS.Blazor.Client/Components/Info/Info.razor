@@ -1,4 +1,5 @@
-﻿@using LMS.Blazor.Client.Models
+﻿@using LMS.Blazor.Client.Components.Common
+@using LMS.Blazor.Client.Models
 @using LMS.Blazor.Client.Services
 @using LMS.Blazor.Client.Services.Interfaces
 @inject ICourseService CourseService
@@ -12,22 +13,16 @@
         </h5>
     </div>
     <div class="card-body p-0">
-        @if (IsLoading)
-        {
-            <div class="text-center p-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        }
-        else if (HasError)
+        <Loading Show="@IsLoading" Message="Loading information..." />
+        
+        @if (HasError && !IsLoading)
         {
             <div class="alert alert-danger m-4" role="alert">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 An error occurred while loading the information.
             </div>
         }
-        else
+        else if (!IsLoading)
         {
             @if (!string.IsNullOrEmpty(GetDescription()))
             {
@@ -254,7 +249,6 @@
         _ => "bi bi-info-circle"
     };
 
-    // Get the appropriate color class based on entity type
     private string GetTitleColorClass() => InfoType switch
     {
         EntityType.Course => "text-course",
