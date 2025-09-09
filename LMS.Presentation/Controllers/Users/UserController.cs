@@ -16,8 +16,8 @@ public class UserController : Controller
     private readonly IUserService _userService;
     public UserController(IUserService userService) => _userService = userService;
 
-    [Authorize (Policy = "IsTeacher")]
     [HttpGet("{id}")]
+    [Authorize (Policy = "IsTeacher")]
     public async Task<IActionResult> GetUserById(string id, CancellationToken ct)
     {
 
@@ -31,16 +31,16 @@ public class UserController : Controller
         return Ok(result.Value);                    
     }
 
-    [Authorize(Policy = "TeacherOrStudentClaim")]
     [HttpGet]
+    [Authorize(Policy = "TeacherOrStudentClaim")]
     public async Task<IActionResult> GetAllUsers(CancellationToken ct)
     {
             var users = await _userService.GetAllUsersAsync(ct);        
             return Ok(users ?? Array.Empty<UserDto>());     
     }
 
-    [Authorize(Policy = "TeacherOrStudentClaim")]
     [HttpPut("{id}/edit")]
+    [Authorize(Policy = "TeacherOrStudentClaim")]
     public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto dto, CancellationToken ct)
     {
         var result = await _userService.UpdateUserAsync(dto, id, ct);
@@ -52,8 +52,8 @@ public class UserController : Controller
         return NoContent();
     }
 
-    [Authorize(Policy = "IsTeacher")]
     [HttpDelete("{id}/delete")]
+    [Authorize(Policy = "IsTeacher")]
     public async Task<IActionResult> DeleteUser(string id, CancellationToken ct)
     {
         var result = await _userService.DeleteUserAsync(id, ct);

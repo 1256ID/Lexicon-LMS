@@ -15,8 +15,8 @@ public class StudentController : Controller
     private readonly IUserService _userService;
     public StudentController(IUserService userService) => _userService = userService;
 
-    [Authorize(Policy = "IsStudent")]
     [HttpGet("api/student/overview")]
+    [Authorize(Policy = "IsStudent")]
     public async Task<IActionResult> GetStudentById(CancellationToken ct)
     {             
         var calledId = User.FindFirstValue(ClaimTypes.NameIdentifier)
@@ -36,9 +36,8 @@ public class StudentController : Controller
         return Ok(result.Value);   
     }
 
+    [HttpGet("api/students")]
     [Authorize(Policy = "TeacherOrStudentClaim")]
-    [HttpGet]
-    [Route("api/students")]
     public async Task<ActionResult<UserDto[]>> GetAllStudents(CancellationToken ct)
     {             
         var result = await _userService.GetAllStudentsAsync(ct);
@@ -50,7 +49,4 @@ public class StudentController : Controller
 
         return Ok(result.Value ?? Array.Empty<UserDto>());
     }
-
-  
-
 }

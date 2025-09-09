@@ -36,8 +36,7 @@ public class TeacherController : Controller
         return Ok(result.Value);
     }
 
-    [HttpGet]
-    [Route("api/teachers")]
+    [HttpGet("api/teachers")]
     public async Task<IActionResult> GetAllTeachers(CancellationToken ct)
     {     
             var result = await _userService.GetAllTeachersAsync(ct);
@@ -51,8 +50,7 @@ public class TeacherController : Controller
             return Ok(result.Value ?? Array.Empty<UserDto>());           
     }
 
-    [HttpPost]
-    [Route("api/teacher/register-student")]
+    [HttpPost("api/teacher/register-student")]
     public async Task<ActionResult<UserDto>> CreateStudent([FromBody] UserRegistrationDto dto, CancellationToken ct)
     {
         if (!ModelState.IsValid)
@@ -68,8 +66,7 @@ public class TeacherController : Controller
         return Created(string.Empty, result); 
     }
 
-    [HttpPost]
-    [Route("api/teacher/register-teacher")]
+    [HttpPost("api/teacher/register-teacher")]
     public async Task<ActionResult<UserDto>> CreateTeacher([FromBody] UserRegistrationDto dto, CancellationToken ct)
     {
         if (!ModelState.IsValid)
