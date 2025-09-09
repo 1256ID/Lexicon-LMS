@@ -1,0 +1,100 @@
+﻿@page "/teacher/course/new"
+
+@rendermode InteractiveWebAssembly
+@inject NavigationManager Navigation
+@inject ICourseService CourseService
+@using LMS.Blazor.Client.Components.Forms
+@using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Teacher")]
+
+<PageTitle>Create Course</PageTitle>
+
+<div class="content">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses" class="text-decoration-none">
+                    <i class="bi bi-book me-1"></i>Courses
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Create Course</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            <CourseForm HeaderTitle="Create New Course"
+                        SubmitButtonText="Create Course"
+                        ShowDeleteButton="false"
+                        OnCancel="@HandleCancel"
+                        OnSubmit="@HandleSubmit"
+                        ErrorMessage="@errorMessage"
+                        SuccessMessage="@successMessage"
+                        IsSubmitting="@isSubmitting" />
+        </div>
+    </div>
+</div>
+
+@code {
+   
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+ 
+    private async Task HandleSubmit(CourseFormData formData)
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+            StateHasChanged();
+
+            // Create new course object from form data
+            var newCourse = new CourseVM
+            {
+                Name = formData.Name,
+                Description = formData.Description,
+                StartDate = formData.StartDate,
+                EndDate = formData.EndDate,
+                TypeId = 1, // Default value
+                DateId = 1  // Default value
+            };
+
+            // Call service to create course - THIS ACTUALLY CREATES THE DATA
+            var createdCourse = await CourseService.CreateCourseAsync(newCourse);
+
+            successMessage = $"Course '{createdCourse.Name}' created successfully!";
+            StateHasChanged();
+
+            await Task.Delay(1500);
+
+            // Navigate back to courses list
+            Navigation.NavigateTo("/teacher/course");
+
+            // Alternative: Navigate to edit page of newly created course
+            //Navigation.NavigateTo($"/teacher/course/edit/{createdCourse.Id}");
+
+             
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating course: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+  
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/teacher/course");
+    }
+}

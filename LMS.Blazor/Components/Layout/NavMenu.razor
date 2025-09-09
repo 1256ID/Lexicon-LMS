@@ -1,5 +1,8 @@
+@using LMS.Blazor.Client.Services
 @implements IDisposable
 @inject NavigationManager NavigationManager
+@inject NavigationStateService NavState
+
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="">
@@ -40,27 +43,95 @@
 
                     <!-- My course -->
                     <div class="nav-item px-2">
-                        <NavLink class="nav-link" href="/student/course">
+                        <NavLink class="nav-link" href="/student/course" Match="NavLinkMatch.All">
                             <span class="bi bi-book-nav-menu" aria-hidden="true"></span> My Course
                         </NavLink> <!-- to do : remplace @course.Name  -->
                     </div>
+
+                    @if (NavState.CurrentModuleId != null)
+                    {
+                        <div class="nav-item px-2">
+                            <NavLink class="nav-link" 
+                                href="@($"student/course/module/{NavState.CurrentModuleId}")"
+                                Match="NavLinkMatch.All">
+                                    @NavState.CurrentModuleName
+                            </NavLink>
+                        </div>
+                    }
+
+                    @if (NavState.CurrentActivityId != null)
+                    {
+                        <div class="nav-item px-2">
+                            <NavLink class="nav-link" 
+                                href="@($"student/course/module/{NavState.CurrentModuleId}/activity/{NavState.CurrentActivityId}")"
+                                    Match="NavLinkMatch.All">
+                                    @NavState.CurrentActivityName
+                            </NavLink>
+                        </div>
+                    }
+
                 }
 
                 <!-- Teacher länkar -->
                 @if (context.User.IsInRole("Teacher"))
                 {
-                    <!-- Register  -->
-                    <div class="nav-item px-2">
-                        <NavLink class="nav-link" href="Account/Register">
-                            <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                        </NavLink>
-                    </div>
-
+                    
                     <div class="nav-item px-2">
                         <NavLink class="nav-link" href="/teacher/overview" Match="NavLinkMatch.All">
                             <span class="bi bi-grid-nav-menu" aria-hidden="true"></span> Overview
                         </NavLink>
                     </div>
+
+                    <!-- Register  -->
+                    <div class="nav-item px-2">
+                        <NavLink class="nav-link" href="/teacher/register-student">
+                            <span class="bi bi-person-plus-nav-menu" aria-hidden="true"></span> Register Student
+                        </NavLink>
+                    </div>
+
+
+
+
+                    <!-- All courses -->
+                    <div class="nav-item px-2">
+                        <NavLink class="nav-link" href="/teacher/course" Match="NavLinkMatch.All">
+                            <span class="bi bi-book-nav-menu" aria-hidden="true"></span> Courses
+                        </NavLink>
+                    </div>
+
+                    @if (NavState.CurrentCourseId != null)
+                    {
+                        <div class="nav-item px-2">
+                            <NavLink class="nav-link"
+                                     href="@($"/teacher/course/{NavState.CurrentCourseId}")"
+                                     Match="NavLinkMatch.All">
+                                @NavState.CurrentCourseName
+                            </NavLink>
+                        </div>
+                    }
+
+                    @if (NavState.CurrentModuleId != null)
+                    {
+                        <div class="nav-item px-2">
+                            <NavLink class="nav-link"
+                                     href="@($"/teacher/course/{NavState.CurrentCourseId}/module/{NavState.CurrentModuleId}")"
+                                     Match="NavLinkMatch.All">
+                                @NavState.CurrentModuleName
+                            </NavLink>
+                        </div>
+                    }
+
+                    @if (NavState.CurrentActivityId != null)
+                    {
+                        <div class="nav-item px-2">
+                            <NavLink class="nav-link"
+                                     href="@($"/teacher/course/{NavState.CurrentCourseId}/module/{NavState.CurrentModuleId}/activity/{NavState.CurrentActivityId}")"
+                                     Match="NavLinkMatch.All">
+                                @NavState.CurrentActivityName
+                            </NavLink>
+                        </div>
+                    }
+
                 }
 
                 <!-- DemoAuth
@@ -102,10 +173,15 @@
 
 @code {
     private string? currentUrl;
+    private Action? _navStateHandler;
+
     protected override void OnInitialized()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+
+        _navStateHandler = () => InvokeAsync(StateHasChanged);
+        NavState.OnChange += _navStateHandler;
     }
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
@@ -115,6 +191,9 @@
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+
+        if (_navStateHandler is not null)
+            NavState.OnChange -= _navStateHandler;
     }
 }
 

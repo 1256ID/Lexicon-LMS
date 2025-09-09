@@ -1,0 +1,102 @@
+﻿
+<div class="card shadow-sm @(FullHeight ? "h-100" : "")">
+    <div class="card-header bg-light border-0 p-4">
+        <h5 class="fw-bold mb-0 text-primary">
+            <i class="bi @IconClass me-2"></i>@Title
+        </h5>
+    </div>
+    <div class="card-body p-4">
+        @if (Items != null && Items.Any())
+        {
+            @if (IsListFormat)
+            {
+                <!-- list - student -->
+                <ul class="list-group list-group-flush">
+                    @foreach (var item in Items.Take(MaxItems))
+                    {
+                        <li class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@GetItemTitle(item)</h6>
+                                    @if (!string.IsNullOrEmpty(GetItemSubtitle(item)))
+                                    {
+                                        <small class="text-muted">@GetItemSubtitle(item)</small>
+                                    }
+                                </div>
+                                @if (ShowBadges && GetItemDate(item) != null)
+                                {
+                                    <span class="badge @GetBadgeClass(item)">
+                                        @GetItemDate(item)?.ToString("MM/dd")
+                                    </span>
+                                }
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <!-- flex - teacher -->
+                @foreach (var item in Items.Take(MaxItems))
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-1">@GetItemTitle(item)</h6>
+                            @if (!string.IsNullOrEmpty(GetItemSubtitle(item)))
+                            {
+                                <small class="text-muted">@GetItemSubtitle(item)</small>
+                            }
+                        </div>
+                        <div class="text-end">
+                            @if (ShowBadges && GetItemDate(item) != null)
+                            {
+                                <span class="badge @GetBadgeClass(item)">
+                                    @GetItemDate(item)?.ToString("MM/dd")
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+
+            @if (ShowViewAllButton && Items.Count() > MaxItems)
+            {
+                <div class="text-end mt-3">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="OnViewAllClick">
+                        @ViewAllText <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center text-muted py-4">
+                <i class="bi @EmptyIcon fs-1 mb-2"></i>
+                <p class="mb-0">@EmptyMessage</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Upcoming Items";
+    [Parameter] public string IconClass { get; set; } = "bi-alarm";
+    [Parameter] public IEnumerable<object> Items { get; set; } = new List<object>();
+    [Parameter] public int MaxItems { get; set; } = 5;
+    [Parameter] public bool FullHeight { get; set; } = false;
+    [Parameter] public bool IsListFormat { get; set; } = false; // true for student, false for teacher
+    [Parameter] public bool ShowBadges { get; set; } = true;
+    [Parameter] public bool ShowViewAllButton { get; set; } = false;
+    [Parameter] public string ViewAllText { get; set; } = "View All";
+    [Parameter] public string EmptyMessage { get; set; } = "No upcoming items";
+    [Parameter] public string EmptyIcon { get; set; } = "bi-check-circle";
+
+    // Events
+    [Parameter] public EventCallback OnViewAllClick { get; set; }
+
+    // Functions to extract properties from items
+    [Parameter] public Func<object, string> GetItemTitle { get; set; } = item => item.ToString();
+    [Parameter] public Func<object, string> GetItemSubtitle { get; set; } = item => "";
+    [Parameter] public Func<object, DateTime?> GetItemDate { get; set; } = item => null;
+    [Parameter] public Func<object, string> GetBadgeClass { get; set; } = item => "bg-primary";
+}

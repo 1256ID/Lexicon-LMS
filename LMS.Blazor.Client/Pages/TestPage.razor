@@ -1,4 +1,5 @@
-﻿@using LMS.Blazor.Components.Layout
+﻿@using LMS.Blazor.Client.Components.Cards
+@using LMS.Blazor.Client.Components.Tabs
 @inject NavigationManager Navigation
 
  @page "/test"
@@ -12,16 +13,16 @@
     <div class="row">
 
         <div>
-            <ModuleNavigationButtons />
+            <CourseTabs />
         </div>
         <div>
-            <CourseNavigationButtons />
+            <ModuleTabs />
         </div>
 
         <div >
             <CourseCard />
         </div>
-        <div ">
+        <div>
             <ModuleCard/>
         </div>
         <div >

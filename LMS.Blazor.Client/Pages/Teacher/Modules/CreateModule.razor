@@ -1,0 +1,153 @@
+﻿@page "/teacher/course/{CourseId:int}/module/new"
+
+@rendermode InteractiveWebAssembly
+@inject NavigationManager Navigation
+@inject IModuleService ModuleService
+@inject ICourseService CourseService
+@using LMS.Blazor.Client.Components.Forms
+@using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Teacher")]
+
+<PageTitle>Create Module</PageTitle>
+
+<div class="content">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses" class="text-decoration-none">
+                    <i class="bi bi-book me-1"></i>Courses
+                </a>
+            </li>
+            @if (course != null)
+            {
+                <li class="breadcrumb-item">
+                    <a href="/teacher/course/@CourseId" class="text-decoration-none">
+                        @course.Name
+                    </a>
+                </li>
+            }
+            <li class="breadcrumb-item active">Create Module</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            @if (isLoadingCourse)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading course...</span>
+                    </div>
+                </div>
+            }
+            else if (course == null)
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Course not found.
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <h4 class="text-muted">Creating module for: <strong>@course.Name</strong></h4>
+                </div>
+
+                <ModuleForm HeaderTitle="Create New Module"
+                            SubmitButtonText="Create Module"
+                            ShowDeleteButton="false"
+                            OnCancel="@HandleCancel"
+                            OnSubmit="@HandleSubmit"
+                            ErrorMessage="@errorMessage"
+                            SuccessMessage="@successMessage"
+                            IsSubmitting="@isSubmitting" />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+
+    // Component state
+    private CourseVM? course;
+    private bool isLoadingCourse = true;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCourse();
+    }
+
+    private async Task LoadCourse()
+    {
+        try
+        {
+            isLoadingCourse = true;
+            course = await CourseService.GetCourseByIdAsync(CourseId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading course: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingCourse = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSubmit(ModuleFormData formData)
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+            StateHasChanged();
+
+            var newModule = new ModuleVM
+            {
+                Name = formData.Name,
+                Description = formData.Description,
+                StartDate = formData.StartDate,
+                EndDate = formData.EndDate,
+                CourseId = CourseId,
+                TypeId = 1, 
+                DateId = 1 
+            };
+
+            var createdModule = await ModuleService.CreateModuleAsync(newModule);
+
+            successMessage = $"Module '{createdModule.Name}' created successfully!";
+            StateHasChanged();
+
+            await Task.Delay(1500);
+
+            // Navigate back to course details page
+            Navigation.NavigateTo($"/teacher/course/{CourseId}");
+
+            // alternative:Navigate to edit page of newly created module
+           // Navigation.NavigateTo($"/teacher/course/{CourseId}/module/edit/{createdModule.Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating module: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo($"/teacher/course/{CourseId}");
+    }
+}

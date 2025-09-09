@@ -1,6 +1,8 @@
 using Domain.Models.Entities;
 using LMS.Blazor;
 using LMS.Blazor.Client.Services;
+using LMS.Blazor.Client.Services.Implementations;
+using LMS.Blazor.Client.Services.Interfaces;
 using LMS.Blazor.Components;
 using LMS.Blazor.Components.Account;
 using LMS.Blazor.Data;
@@ -30,6 +32,9 @@ builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAu
 // API service
 builder.Services.AddScoped<IApiService, ServerNoopApiService>();
 builder.Services.AddScoped<IAuthReadyService, ServerNoopAuthReadyService>();
+
+builder.Services.AddSingleton<NavigationStateService>();
+
 
 // Authentication setup
 builder.Services.AddAuthentication(options =>
@@ -70,6 +75,11 @@ builder.Services.Configure<PasswordHasherOptions>(options => options.IterationCo
 // Token storage service
 builder.Services.AddSingleton<ITokenStorage, TokenStorageService>();
 
+builder.Services.AddScoped<ICourseService, MockCourseService>();
+builder.Services.AddScoped<IModuleService, MockModuleService>();
+builder.Services.AddScoped<IActivityService, MockActivityService>();
+builder.Services.AddScoped<IParticipantsService, MockParticipantsService>();
+
 var app = builder.Build();
 
 
@@ -95,6 +105,8 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(LMS.Blazor.Client._Imports).Assembly);
+
+app.MapFallbackToFile("index.html");
 
 app.MapControllers();
 

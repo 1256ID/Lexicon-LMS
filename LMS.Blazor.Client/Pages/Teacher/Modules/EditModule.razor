@@ -1,0 +1,204 @@
+﻿@page "/teacher/course/{CourseId:int}/module/edit/{ModuleId:int}"
+
+@rendermode InteractiveWebAssembly
+@inject NavigationManager Navigation
+@inject IModuleService ModuleService
+@inject ICourseService CourseService
+@inject IJSRuntime JSRuntime
+@using LMS.Blazor.Client.Components.Forms
+@using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Teacher")]
+
+<PageTitle>Edit Module</PageTitle>
+
+<div class="content">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses" class="text-decoration-none">
+                    <i class="bi bi-book me-1"></i>Courses
+                </a>
+            </li>
+            @if (course != null)
+            {
+                <li class="breadcrumb-item">
+                    <a href="/teacher/course/@CourseId" class="text-decoration-none">
+                        @course.Name
+                    </a>
+                </li>
+            }
+            <li class="breadcrumb-item active">Edit Module</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            @if (isLoading)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (module == null)
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Module not found.
+                </div>
+            }
+            else
+            {
+                @if (course != null)
+                {
+                    <div class="mb-3">
+                        <h4 class="text-muted">Editing module in: <strong>@course.Name</strong></h4>
+                    </div>
+                }
+
+                <ModuleForm HeaderTitle="Edit Module"
+                            SubmitButtonText="Update Module"
+                            ShowDeleteButton="true"
+                            InitialModuleName="@module.Name"
+                            InitialDescription="@module.Description"
+                            InitialStartDate="@module.StartDate"
+                            InitialEndDate="@module.EndDate"
+                            OnCancel="@HandleCancel"
+                            OnSubmit="@HandleSubmit"
+                            OnDelete="@HandleDelete"
+                            ErrorMessage="@errorMessage"
+                            SuccessMessage="@successMessage"
+                            IsSubmitting="@isSubmitting" />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    [Parameter] public int ModuleId { get; set; }
+
+    // Component state
+    private ModuleVM? module;
+    private CourseVM? course;
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            var moduleTask = ModuleService.GetModuleByIdAsync(ModuleId);
+            var courseTask = CourseService.GetCourseByIdAsync(CourseId);
+
+            await Task.WhenAll(moduleTask, courseTask);
+
+            module = await moduleTask;
+            course = await courseTask;
+
+            if (module == null)
+            {
+                errorMessage = $"Module with ID {ModuleId} not found";
+            }
+            else if (module.CourseId != CourseId)
+            {
+                errorMessage = "Module does not belong to the specified course";
+                module = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading data: {ex.Message}";
+            module = null;
+            course = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSubmit(ModuleFormData formData)
+    {
+        if (module == null) return;
+
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+            StateHasChanged();
+
+            // Update module properties
+            module.Name = formData.Name;
+            module.Description = formData.Description;
+            module.StartDate = formData.StartDate;
+            module.EndDate = formData.EndDate;
+
+            var updatedModule = await ModuleService.UpdateModuleAsync(module);
+
+            successMessage = "Module updated successfully!";
+            StateHasChanged();
+
+            await Task.Delay(1500);
+            Navigation.NavigateTo($"/teacher/course/{CourseId}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating module: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo($"/teacher/course/{CourseId}");
+    }
+
+    private async Task HandleDelete()
+    {
+        if (module == null) return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
+            $"Are you sure you want to delete the module '{module.Name}'? This action cannot be undone.");
+
+        if (!confirmed) return;
+
+        try
+        {
+            var success = await ModuleService.DeleteModuleAsync(module.Id);
+
+            if (success)
+            {
+                Navigation.NavigateTo($"/teacher/course/{CourseId}");
+            }
+            else
+            {
+                errorMessage = "Failed to delete module";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting module: {ex.Message}";
+        }
+    }
+}

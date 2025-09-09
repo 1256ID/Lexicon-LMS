@@ -1,0 +1,71 @@
+﻿@using LMS.Blazor.Client.Models
+@using LMS.Blazor.Client.Components.Cards
+@using LMS.Blazor.Client.Services
+@using LMS.Blazor.Client.Services.Interfaces
+@inject IActivityService ActivityService
+@inject NavigationManager Nav
+@inject NavigationStateService NavState
+@using LMS.Blazor.Client.Components.Common
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Teacher")]
+
+<Loading Show="@isLoading" Message="Loading activities..." />
+
+@if (!isLoading && ActivitiesList?.Any() == true)
+{
+    <div class="row mt-5">
+        @foreach (var a in ActivitiesList)
+        {
+            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                <ActivityCard Activity="a"
+                              OnOpen="OpenActivity"
+                              OnEdit="EditActivity" />
+            </div>
+        }
+    </div>
+}
+else if (!isLoading && (ActivitiesList == null || !ActivitiesList.Any()))
+{
+    <div class="text-center text-muted p-4">
+        <i class="bi bi-journal-x fs-1 mb-2"></i>
+        <p class="mb-0">No activities available</p>
+    </div>
+}
+
+@code {
+    [Parameter] public int ModuleId { get; set; }
+    [Parameter] public int CourseId { get; set; }
+
+    private List<ActivityVM>? ActivitiesList;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            var activities = await ActivityService.GetActivitiesByModuleIdAsync(ModuleId);
+            ActivitiesList = activities.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading activities: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenActivity(ActivityVM a)
+    {
+        var moduleName = NavState.CurrentModuleName ?? $"Module {ModuleId}";
+        NavState.SetActivity(ModuleId, moduleName, a.Id, a.Name);
+        Nav.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}/activity/{a.Id}");
+    }
+
+    private void EditActivity(int id)
+    {
+        Nav.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}/activity/edit/{id}");
+    }
+}

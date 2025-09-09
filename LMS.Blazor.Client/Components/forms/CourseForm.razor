@@ -1,0 +1,152 @@
+﻿@using LMS.Blazor.Client.Models
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light border-0 p-4">
+        <h5 class="fw-bold mb-0 text-primary">
+            <i class="bi bi-book me-2"></i>@HeaderTitle
+        </h5>
+    </div>
+    <div class="card-body p-4">
+        <div class="row">
+            <div class="col-12 mb-3">
+                <div class="form-floating">
+                    <input @bind="courseName" class="form-control" id="courseName" name="courseName" placeholder="Course Name" />
+                    <label for="courseName">Course Name *</label>
+                </div>
+            </div>
+
+            <div class="col-12 mb-3">
+                <div class="form-floating">
+                    <textarea @bind="courseDescription" class="form-control course-description" id="courseDescription" name="courseDescription"
+                              placeholder="Course Description" style="height: 180px; min-height: 180px; resize: vertical;"></textarea>
+                    <label for="courseDescription">Course Description *</label>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <input @bind="startDate" type="date" class="form-control" id="startDate" name="startDate" />
+                    <label for="startDate">Start Date *</label>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <input @bind="endDate" type="date" class="form-control" id="endDate" name="endDate" />
+                    <label for="endDate">End Date *</label>
+                </div>
+            </div>
+
+        </div>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@ErrorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(SuccessMessage))
+        {
+            <div class="alert alert-success mt-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@SuccessMessage
+            </div>
+        }
+    </div>
+
+    <div class="card-footer bg-light border-0 p-4">
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" @onclick="HandleCancel">
+                <i class="bi bi-arrow-left me-2"></i>Cancel
+            </button>
+            <div>
+                @if (ShowDeleteButton)
+                {
+                    <button type="button" class="btn btn-outline-danger me-2" @onclick="HandleDelete">
+                        <i class="bi bi-trash me-2"></i>Delete
+                    </button>
+                }
+                <button type="button" class="btn btn-primary" @onclick="HandleSubmit" disabled="@IsSubmitting">
+                    @if (IsSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-lg me-2"></i>
+                    }
+                    @SubmitButtonText
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // COMPONENT PARAMETERS
+    [Parameter] public string HeaderTitle { get; set; } = "Course Information";
+    [Parameter] public string SubmitButtonText { get; set; } = "Save Course";
+    [Parameter] public bool ShowDeleteButton { get; set; } = false;
+
+    // EVENT CALLBACKS
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback<CourseFormData> OnSubmit { get; set; }
+
+    // INITIAL VALUES (for edit mode)
+    [Parameter] public string? InitialCourseName { get; set; }
+    [Parameter] public string? InitialDescription { get; set; }
+    [Parameter] public DateTime? InitialStartDate { get; set; }
+    [Parameter] public DateTime? InitialEndDate { get; set; }
+
+    // STATE (controlled by parent)
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public string? SuccessMessage { get; set; }
+    [Parameter] public bool IsSubmitting { get; set; }
+
+    // FORM FIELDS
+    private string courseName = "";
+    private string courseDescription = "";
+    private DateTime startDate = DateTime.Today;
+    private DateTime endDate = DateTime.Today.AddDays(30);
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(InitialCourseName))
+            courseName = InitialCourseName;
+
+        if (!string.IsNullOrEmpty(InitialDescription))
+            courseDescription = InitialDescription;
+
+        if (InitialStartDate.HasValue)
+            startDate = InitialStartDate.Value;
+
+        if (InitialEndDate.HasValue)
+            endDate = InitialEndDate.Value;
+
+    }
+
+    private async Task HandleSubmit()
+    {
+        // Basic validation
+        if (string.IsNullOrWhiteSpace(courseName) ||
+            string.IsNullOrWhiteSpace(courseDescription) ||
+            endDate <= startDate)
+        {
+            return;
+        }
+
+        var formData = new CourseFormData
+        {
+            Name = courseName.Trim(),
+            Description = courseDescription.Trim(),
+            StartDate = startDate,
+            EndDate = endDate
+        };
+
+        await OnSubmit.InvokeAsync(formData);
+    }
+
+    private async Task HandleCancel() => await OnCancel.InvokeAsync();
+    private async Task HandleDelete() => await OnDelete.InvokeAsync();
+}

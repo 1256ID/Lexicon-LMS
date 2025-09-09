@@ -1,4 +1,6 @@
 using LMS.Blazor.Client.Services;
+using LMS.Blazor.Client.Services.Implementations;
+using LMS.Blazor.Client.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -6,6 +8,9 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddScoped<IApiService, ClientApiService>();
 builder.Services.AddScoped<IAuthReadyService, AuthReadyService>();
+
+builder.Services.AddSingleton<NavigationStateService>();
+
 
 builder.Services.AddHttpClient("BffClient", cfg =>
 {
@@ -18,5 +23,10 @@ builder.Services.AddSingleton<AuthenticationStateProvider,
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore();
+
+builder.Services.AddScoped<ICourseService, MockCourseService>();
+builder.Services.AddScoped<IModuleService, MockModuleService>();
+builder.Services.AddScoped<IActivityService, MockActivityService>();
+builder.Services.AddScoped<IParticipantsService, MockParticipantsService>();
 
 await builder.Build().RunAsync();

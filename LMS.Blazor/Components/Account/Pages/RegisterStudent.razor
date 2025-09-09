@@ -1,11 +1,15 @@
-﻿@page "/Account/Register"
+﻿@page "/teacher/register-student"
+
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using LMS.Blazor.Data
+
+@attribute [Authorize(Roles = "Teacher")]
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
@@ -16,77 +20,58 @@
 @inject IdentityRedirectManager RedirectManager
 @inject RoleManager<IdentityRole> RoleManager
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Register Student</PageTitle>
 
 <div class="container-fluid">
     <div class="row justify-content-center min-vh-100 align-items-center">
-        <!-- Main Register Card -->
         <div class="col-lg-5 col-md-7 col-sm-10">
             <div class="card shadow-lg" style="border-radius: 1rem;">
-                <!-- Card Header -->
                 <div class="card-header text-center py-4" style="background-color: #1b6ec2; color: white; border-radius: 1rem 1rem 0 0;">
-                    <h2 class="mb-0 fw-bold">Create Account</h2>
-                    <p class="mb-0 mt-2">Join our learning platform</p>
+                    <h2 class="mb-0 fw-bold">Register Student</h2>
+                    <p class="mb-0 mt-2">Create a student account</p>
                 </div>
 
-                <!-- Card Body -->
                 <div class="card-body p-4">
                     <StatusMessage Message="@Message" />
 
-                    <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                    <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register-student">
                         <DataAnnotationsValidator />
                         <ValidationSummary class="text-danger mb-3" role="alert" />
 
-                        <!-- Email Field -->
                         <div class="form-floating mb-3">
                             <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                             <label for="email" class="form-label">Email Address</label>
                             <ValidationMessage For="() => Input.Email" class="text-danger" />
                         </div>
 
-                        <!-- Password Field -->
                         <div class="form-floating mb-3">
                             <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                             <label for="password" class="form-label">Password</label>
                             <ValidationMessage For="() => Input.Password" class="text-danger" />
                         </div>
 
-                        <!-- Confirm Password Field -->
                         <div class="form-floating mb-4">
                             <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                             <label for="confirm-password" class="form-label">Confirm Password</label>
                             <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
                         </div>
 
-                        <!-- Register Button -->
                         <div class="d-grid mb-4">
                             <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 0.5rem;">
-                                Create Account
+                                Create Student
                             </button>
                         </div>
 
-                        <!-- Link to Login -->
                         <div class="text-center">
                             <div class="mb-2">
-                                <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl ?? "/" }))"
-                                   class="text-decoration-none">Already have an account? Sign in here</a>
+                                <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))"
+                                   class="text-decoration-none">Back to sign in</a>
                             </div>
                         </div>
                     </EditForm>
                 </div>
             </div>
         </div>
-
-        @*  <!-- External Registration Section -->
-        <div class="col-lg-4 col-md-5 col-sm-10 mt-4 mt-lg-0">
-            <div class="card shadow-sm h-100" style="border-radius: 1rem;">
-                <div class="card-body p-4 text-center">
-                    <h4 class="card-title mb-4" style="color: #1b6ec2;">Alternative Registration</h4>
-                    <hr class="mb-4" />
-                    <ExternalLoginPicker />
-                </div>
-            </div>
-        </div> *@
     </div>
 </div>
 
@@ -108,9 +93,9 @@
         UserManager.Options.Password.RequireUppercase = false;
         UserManager.Options.Password.RequireNonAlphanumeric = false;
         UserManager.Options.Password.RequiredLength = 6;
+        Input.Role = "Student";
     }
 
-    //Use API to add users!!!!
     public async Task RegisterUser(EditContext editContext)
     {
         var user = CreateUser();
@@ -126,10 +111,9 @@
             return;
         }
 
-        var roleName = "Teacher";
-        if (!await RoleManager.RoleExistsAsync(roleName))
+        if (!await RoleManager.RoleExistsAsync(Input.Role))
         {
-            var roleCreate = await RoleManager.CreateAsync(new IdentityRole(roleName));
+            var roleCreate = await RoleManager.CreateAsync(new IdentityRole(Input.Role));
             if (!roleCreate.Succeeded)
             {
                 identityErrors = roleCreate.Errors;
@@ -137,21 +121,21 @@
             }
         }
 
-        var addToRole = await UserManager.AddToRoleAsync(user, roleName);
+        var addToRole = await UserManager.AddToRoleAsync(user, Input.Role);
         if (!addToRole.Succeeded)
         {
             identityErrors = addToRole.Errors;
             return;
         }
 
-        Logger.LogInformation("User created a new account with password.");
+        Logger.LogInformation("Student account created.");
 
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl ?? "/" });
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
 
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
@@ -159,10 +143,10 @@
         {
             RedirectManager.RedirectTo(
                 "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl ?? "/" });
+                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
         }
 
-        RedirectManager.RedirectTo(ReturnUrl ?? "/");
+        RedirectManager.RedirectTo(ReturnUrl);
     }
 
     private ApplicationUser CreateUser()
@@ -203,5 +187,8 @@
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
+
+        [Required]
+        public string Role { get; set; } = "Student";
     }
 }

@@ -1,0 +1,43 @@
+﻿@using LMS.Blazor.Client.Components.Common
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveWebAssembly
+@attribute [Authorize(Roles = "Student")]
+
+<Loading Show="@isLoading" Message="Loading schedule..." />
+
+@if (!isLoading)
+{
+    <div class="card">
+        <div class="card-header">Schedule</div>
+        <div class="card-body">
+            <ul>
+                <li>Mon 09:00 — Lecture</li>
+                <li>Wed 13:00 — Workshop</li>
+                <li>Fri 10:00 — Lab</li>
+            </ul>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            await Task.Delay(100); // simulera async-data om nödvändigt
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading Schedule: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
+

@@ -1,0 +1,188 @@
+﻿@page "/teacher/course/{CourseId:int}/module/{ModuleId:int}/activity/new"
+
+@rendermode InteractiveWebAssembly
+@inject NavigationManager Navigation
+@inject IActivityService ActivityService
+@inject IModuleService ModuleService
+@inject ICourseService CourseService
+@using LMS.Blazor.Client.Components.Forms
+@using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Teacher")]
+
+<PageTitle>Create Activity</PageTitle>
+
+<div class="content">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/teacher/courses" class="text-decoration-none">
+                    <i class="bi bi-book me-1"></i>Courses
+                </a>
+            </li>
+            @if (course != null)
+            {
+                <li class="breadcrumb-item">
+                    <a href="/teacher/course/@CourseId" class="text-decoration-none">
+                        @course.Name
+                    </a>
+                </li>
+            }
+            @if (module != null)
+            {
+                <li class="breadcrumb-item">
+                    <a href="/teacher/course/@CourseId/module/@ModuleId" class="text-decoration-none">
+                        @module.Name
+                    </a>
+                </li>
+            }
+            <li class="breadcrumb-item active">Create Activity</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            @if (isLoadingData)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (module == null || course == null)
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Module or course not found.
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <h4 class="text-muted">Creating activity for module: <strong>@module.Name</strong></h4>
+                    <small class="text-muted">in course: @course.Name</small>
+                </div>
+
+                <ActivityForm HeaderTitle="Create New Activity"
+                              SubmitButtonText="Create Activity"
+                              ShowDeleteButton="false"
+                              OnCancel="@HandleCancel"
+                              OnSubmit="@HandleSubmit"
+                              ErrorMessage="@errorMessage"
+                              SuccessMessage="@successMessage"
+                              IsSubmitting="@isSubmitting" />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    [Parameter] public int ModuleId { get; set; }
+
+    // Component state
+    private ModuleVM? module;
+    private CourseVM? course;
+    private bool isLoadingData = true;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoadingData = true;
+            errorMessage = string.Empty;
+
+            var moduleTask = ModuleService.GetModuleByIdAsync(ModuleId);
+            var courseTask = CourseService.GetCourseByIdAsync(CourseId);
+
+            await Task.WhenAll(moduleTask, courseTask);
+
+            module = await moduleTask;
+            course = await courseTask;
+
+            if (module == null)
+            {
+                errorMessage = $"Module with ID {ModuleId} not found";
+            }
+            else if (module.CourseId != CourseId)
+            {
+                errorMessage = "Module does not belong to the specified course";
+                module = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading data: {ex.Message}";
+            module = null;
+            course = null;
+        }
+        finally
+        {
+            isLoadingData = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSubmit(ActivityFormData formData)
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+            StateHasChanged();
+
+            // Create new activity object from form data
+            var newActivity = new ActivityVM
+            {
+                Name = formData.Name,
+                Description = formData.Description,
+                TypeName = formData.TypeName,
+                StartDate = formData.StartDate,
+                EndDate = formData.EndDate,
+                ModuleId = ModuleId,
+                DateId = 1  // Default value
+            };
+
+            // Call service to create activity
+            var createdActivity = await ActivityService.CreateActivityAsync(newActivity);
+
+            successMessage = $"Activity '{createdActivity.Name}' created successfully!";
+            StateHasChanged();
+
+            await Task.Delay(1500);
+
+
+            // Navigate to module page
+            Navigation.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}");
+
+            // alternative:Navigate to edit page of newly created activity
+            //Navigation.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}/activity/edit/{createdActivity.Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating activity: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo($"/teacher/course/{CourseId}/module/{ModuleId}");
+    }
+}
