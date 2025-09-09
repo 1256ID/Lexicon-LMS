@@ -1,17 +1,19 @@
-﻿@page "/teacher/course/{CourseId:int}/modules/new"
+﻿@page "/teacher/course/{CourseId:int}/module/new"
 
 @rendermode InteractiveWebAssembly
 @inject NavigationManager Navigation
-@inject HttpClient HttpClient
-
+@inject IModuleService ModuleService
+@inject ICourseService CourseService
 @using LMS.Blazor.Client.Components.Forms
+@using LMS.Blazor.Client.Services.Interfaces
+@using LMS.Blazor.Client.Models
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Teacher")]
 
-<PageTitle>Create New Module</PageTitle>
+<PageTitle>Create Module</PageTitle>
 
 <div class="content">
-    <!-- Breadcrumb with course name -->
+    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-5">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
@@ -19,130 +21,129 @@
                     <i class="bi bi-book me-1"></i>Courses
                 </a>
             </li>
-            <li class="breadcrumb-item">
-                <a href="/teacher/courses/@CourseId" class="text-decoration-none">
-                    @courseName
-                </a>
-            </li>
-            <li class="breadcrumb-item active">Create New Module</li>
+            @if (course != null)
+            {
+                <li class="breadcrumb-item">
+                    <a href="/teacher/course/@CourseId" class="text-decoration-none">
+                        @course.Name
+                    </a>
+                </li>
+            }
+            <li class="breadcrumb-item active">Create Module</li>
         </ol>
     </nav>
 
     <div class="row">
         <div class="col-12">
-            <!-- CREATE MODE: No initial values, fields are empty -->
-            <ModuleForm HeaderTitle="Create New Module"
-                       SubmitButtonText="Create Module"
-                       ShowDeleteButton="false"
-                       OnCancel="@HandleCancel"
-                       OnSubmit="@HandleSubmit" />
-            
-            <!-- With Module model:
-            <ModuleForm Module="@newModule"
-                       OnValidSubmit="@HandleSubmit"
-                       OnCancel="@HandleCancel"
-                       HeaderTitle="Create New Module"
-                       HeaderIcon="bi-plus-circle"
-                       SubmitButtonText="Create Module"
-                       SubmitIcon="bi-plus-lg"
-                       ShowDeleteButton="false"
-                       ErrorMessage="@errorMessage"
-                       SuccessMessage="@successMessage"
-                       IsSubmitting="@isSubmitting" />
-            -->
+            @if (isLoadingCourse)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading course...</span>
+                    </div>
+                </div>
+            }
+            else if (course == null)
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Course not found.
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <h4 class="text-muted">Creating module for: <strong>@course.Name</strong></h4>
+                </div>
+
+                <ModuleForm HeaderTitle="Create New Module"
+                            SubmitButtonText="Create Module"
+                            ShowDeleteButton="false"
+                            OnCancel="@HandleCancel"
+                            OnSubmit="@HandleSubmit"
+                            ErrorMessage="@errorMessage"
+                            SuccessMessage="@successMessage"
+                            IsSubmitting="@isSubmitting" />
+            }
         </div>
     </div>
 </div>
 
 @code {
     [Parameter] public int CourseId { get; set; }
-    
-    private string courseName = "Sample Course"; // Will be loaded from API later
-    
-    // ===== TEMPORARY VARIABLES =====
-    // With Module model, uncomment:
-    // private Module newModule = new() { CourseId = CourseId, StartDate = DateTime.Today, EndDate = DateTime.Today.AddWeeks(2) };
-    // private bool isSubmitting = false;
-    // private string errorMessage = string.Empty;
-    // private string successMessage = string.Empty;
+
+    // Component state
+    private CourseVM? course;
+    private bool isLoadingCourse = true;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCourseName();
+        await LoadCourse();
     }
 
-    private async Task LoadCourseName()
+    private async Task LoadCourse()
     {
-        // TEMPORARY - Later replace with real API call:
-        await Task.Delay(100);
-        courseName = "Introduction to UI/UX Design"; // Mock data
-        
-        // WITH API - Uncomment later:
-        /*
         try
         {
-            var response = await HttpClient.GetAsync($"api/courses/{CourseId}");
-            if (response.IsSuccessStatusCode)
-            {
-                var course = await response.Content.ReadFromJsonAsync<Course>();
-                courseName = course.Name;
-            }
+            isLoadingCourse = true;
+            course = await CourseService.GetCourseByIdAsync(CourseId);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            courseName = "Course";
+            errorMessage = $"Error loading course: {ex.Message}";
         }
-        */
+        finally
+        {
+            isLoadingCourse = false;
+            StateHasChanged();
+        }
     }
 
-    private void HandleSubmit()
+    private async Task HandleSubmit(ModuleFormData formData)
     {
-        Navigation.NavigateTo($"/teacher/course/{CourseId}");
-        
-        // WITH API - Uncomment later:
-        /*
         try
         {
             isSubmitting = true;
             errorMessage = string.Empty;
             successMessage = string.Empty;
+            StateHasChanged();
 
-            // Validate dates
-            if (newModule.EndDate <= newModule.StartDate)
+            var newModule = new ModuleVM
             {
-                errorMessage = "End date must be after start date";
-                return;
-            }
+                Name = formData.Name,
+                Description = formData.Description,
+                StartDate = formData.StartDate,
+                EndDate = formData.EndDate,
+                CourseId = CourseId,
+                TypeId = 1, 
+                DateId = 1 
+            };
 
-            // API call to create module
-            var response = await HttpClient.PostAsJsonAsync("api/modules", newModule);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var createdModule = await response.Content.ReadFromJsonAsync<Module>();
-                successMessage = "Module created successfully!";
-                await Task.Delay(1500);
-                Navigation.NavigateTo($"/teacher/courses/{CourseId}/modules");
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to create module: {errorContent}";
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            errorMessage = $"Network error: {ex.Message}";
+            var createdModule = await ModuleService.CreateModuleAsync(newModule);
+
+            successMessage = $"Module '{createdModule.Name}' created successfully!";
+            StateHasChanged();
+
+            await Task.Delay(1500);
+
+            // Navigate back to course details page
+            Navigation.NavigateTo($"/teacher/course/{CourseId}");
+
+            // alternative:Navigate to edit page of newly created module
+           // Navigation.NavigateTo($"/teacher/course/{CourseId}/module/edit/{createdModule.Id}");
         }
         catch (Exception ex)
         {
-            errorMessage = $"Unexpected error: {ex.Message}";
+            errorMessage = $"Error creating module: {ex.Message}";
         }
         finally
         {
             isSubmitting = false;
+            StateHasChanged();
         }
-        */
     }
 
     private void HandleCancel()
