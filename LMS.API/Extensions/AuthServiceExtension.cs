@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using LMS.Shared.RoleNames;
 using LMS.Shared.Claims;
 using System.Text;
+using System.Security.Claims;
 
 namespace LMS.API.Extensions;
 
@@ -47,7 +48,8 @@ public static class AuthServiceExtension
                    ValidateIssuerSigningKey = true,
                    ValidIssuer = jwtSettings.Issuer,
                    ValidAudience = jwtSettings.Audience,
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+                   RoleClaimType = ClaimTypes.Role
                };
            });
     }
@@ -57,14 +59,16 @@ public static class AuthServiceExtension
         var auth = services.AddAuthorizationBuilder();
 
         auth.AddPolicy("IsTeacher", p 
-            => p.RequireRole(RoleNames.TeacherRole));
+            => p.RequireRole(RoleNames.Teacher));
         auth.AddPolicy("IsStudent", p 
-            => p.RequireRole(RoleNames.StudentRole));
+            => p.RequireRole(RoleNames.Student));
+
+        auth.AddPolicy("Admin", p => p.RequireRole(RoleNames.Teacher));
 
         auth.AddPolicy("TeacherOrStudentClaim", policy => policy
             .RequireAssertion(ctx 
-                => ctx.User.HasClaim(ApplicationClaimTypes.UserType, RoleNames.TeacherRole) 
-                || ctx.User.HasClaim(ApplicationClaimTypes.UserType, RoleNames.StudentRole)));
+                => ctx.User.HasClaim(ApplicationClaimTypes.UserType, RoleNames.Teacher) 
+                || ctx.User.HasClaim(ApplicationClaimTypes.UserType, RoleNames.Student)));
 
     }
 

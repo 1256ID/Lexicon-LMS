@@ -43,7 +43,7 @@ public class DataSeedHostingService : IHostedService
 
         try
         {
-            await AddRolesAsync([RoleNames.TeacherRole, RoleNames.StudentRole]);
+            await AddRolesAsync([RoleNames.Teacher, RoleNames.Student]);
             await AddDemoUsersAsync();
             await AddUsersAsync(20);
             logger.LogInformation("Seed complete");
@@ -86,10 +86,10 @@ public class DataSeedHostingService : IHostedService
 
         await AddUserToDb([teacher, student]);
 
-        var teacherRoleResult = await userManager.AddToRoleAsync(teacher, RoleNames.TeacherRole);
+        var teacherRoleResult = await userManager.AddToRoleAsync(teacher, RoleNames.Teacher);
         if (!teacherRoleResult.Succeeded) throw new Exception(string.Join("\n", teacherRoleResult.Errors));
 
-        var studentRoleResult = await userManager.AddToRoleAsync(student, RoleNames.StudentRole);
+        var studentRoleResult = await userManager.AddToRoleAsync(student, RoleNames.Student);
         if (!studentRoleResult.Succeeded) throw new Exception(string.Join("\n", studentRoleResult.Errors));
     }
 

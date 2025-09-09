@@ -11,30 +11,30 @@ namespace LMS.Services.Users
     public class UserService(IUnitOfWork unitOfWork) : IUserService
     {
         // GET
-        public async Task<ResultDto<UserDto>> GetUserByIdAsync(string id) 
-            => await unitOfWork.UserRepository.GetUserDtoById(id);
+        public async Task<ResultDto<UserDto>> GetUserByIdAsync(string id, CancellationToken ct = default) 
+            => await unitOfWork.UserRepository.GetUserDtoById(id, ct);
 
         // GET ALL
-        public async Task<UserDto[]> GetAllUsersAsync() 
-            => await unitOfWork.UserRepository.GetAllUsers();
-        public async Task <ResultDto<IReadOnlyList<UserDto>>> GetAllStudentsAsync() 
-            => await unitOfWork.UserRepository.GetUsersInRoleAsync("Student");     
-        public async Task<ResultDto<IReadOnlyList<UserDto>>> GetAllTeachersAsync() 
-            => await unitOfWork.UserRepository.GetUsersInRoleAsync("Teacher");
+        public async Task<UserDto[]> GetAllUsersAsync(CancellationToken ct = default) 
+            => await unitOfWork.UserRepository.GetAllUsers(ct);
+        public async Task <ResultDto<IReadOnlyList<UserDto>>> GetAllStudentsAsync(CancellationToken ct = default) 
+            => await unitOfWork.UserRepository.GetUsersInRoleAsync("Student", ct);     
+        public async Task<ResultDto<IReadOnlyList<UserDto>>> GetAllTeachersAsync(CancellationToken ct = default) 
+            => await unitOfWork.UserRepository.GetUsersInRoleAsync("Teacher", ct);
 
         // CREATE      
-        public async Task<ResultDto<UserDto>> CreateStudentAsync(UserRegistrationDto dto, CancellationToken ct)
+        public async Task<ResultDto<UserDto>> CreateStudentAsync(UserRegistrationDto dto, CancellationToken ct = default)
         {
             var createdStudent = await unitOfWork.UserRepository.CreateUserAsync(dto, ct);
             if (!createdStudent.Succeded)
-                return ResultDto<UserDto>.Fail(createdStudent.Errors.ToArray());
+                return ResultDto<UserDto>.Fail(createdStudent.Errors.ToArray());          
             
             var addRole = await unitOfWork.UserRepository.AddToRoleAsync(createdStudent.Value!, "Student");
 
             if (!addRole.Succeded)
                 return ResultDto<UserDto>.Fail(addRole.Errors.ToArray());
 
-            var result = await unitOfWork.UserRepository.GetUserDtoById(createdStudent.Value!);          
+            var result = await unitOfWork.UserRepository.GetUserDtoById(createdStudent.Value!, ct);          
 
             if (!result.Succeded)
                 return ResultDto<UserDto>.Fail(result.Errors.ToArray());
@@ -43,7 +43,7 @@ namespace LMS.Services.Users
 
             return ResultDto<UserDto>.Ok(userDto);
         }
-        public async Task<ResultDto<UserDto>> CreateTeacherAsync(UserRegistrationDto dto, CancellationToken ct)
+        public async Task<ResultDto<UserDto>> CreateTeacherAsync(UserRegistrationDto dto, CancellationToken ct = default)
         {
             var createdTeacher = await unitOfWork.UserRepository.CreateUserAsync(dto, ct);
             if (!createdTeacher.Succeded)
@@ -54,7 +54,7 @@ namespace LMS.Services.Users
             if (!addRole.Succeded)
                 return ResultDto<UserDto>.Fail(addRole.Errors.ToArray());
 
-            var result = await unitOfWork.UserRepository.GetUserDtoById(createdTeacher.Value!);
+            var result = await unitOfWork.UserRepository.GetUserDtoById(createdTeacher.Value!, ct);
 
             if (!result.Succeded)
                 return ResultDto<UserDto>.Fail(result.Errors.ToArray());
@@ -65,7 +65,9 @@ namespace LMS.Services.Users
         }
 
         // UPDATE/DELETE
-        public async Task<ResultDto> UpdateUserAsync(UpdateUserDto dto, string id) => await unitOfWork.UserRepository.UpdateUserAsync(dto, id);
-        public async Task<ResultDto> DeleteUserAsync(string id) => await unitOfWork.UserRepository.DeleteUserAsync(id);
+        public async Task<ResultDto> UpdateUserAsync(UpdateUserDto dto, string id, CancellationToken ct = default) 
+            => await unitOfWork.UserRepository.UpdateUserAsync(dto, id, ct);
+        public async Task<ResultDto> DeleteUserAsync(string id, CancellationToken ct = default) 
+            => await unitOfWork.UserRepository.DeleteUserAsync(id, ct);
     }
 }

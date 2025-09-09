@@ -35,37 +35,39 @@ public class UserRepository : IUserRepository
         _mapper = mapper;
     }
 
-    public async Task<ResultDto<UserDto>> GetUserDtoById(string id)
-    {
-        ApplicationUser? user = await _db.Users.SingleOrDefaultAsync(u => u.Id.Equals(id));
+    public async Task<ResultDto<UserDto>> GetUserDtoById(string id, CancellationToken ct = default)
+    {      
+        UserDto? userDto = await _db.Users
+            .AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new UserDto
+            {
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                UserName = u.UserName,
+                Email = u.Email
+            })
+            .FirstOrDefaultAsync(ct);
 
-        if (user is null)
-            return ResultDto<UserDto>.Fail("User not found"); 
+        if (userDto is null)
+            return ResultDto<UserDto>.Fail("User not found");        
 
-        UserDto userDto = new()
-        {         
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            UserName = user.UserName,
-            Email = user.Email,
-        };
-
-        return ResultDto<UserDto>.Ok(userDto);
+        return userDto is null ? ResultDto<UserDto>.Fail("Not found")
+                               : ResultDto<UserDto>.Ok(userDto);
     }
-    public async Task<UserDto[]> GetAllUsers()
-    {
-        ApplicationUser[] users = await _db.Users.ToArrayAsync();
-
-        await _userManager.Users.ToArrayAsync();
-        UserDto[] userDtos = [.. users.Select(user => new UserDto()
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            UserName = user.UserName,
-            Email = user.Email
-        })];        
-
-        return userDtos;
+    public async Task<UserDto[]> GetAllUsers(CancellationToken ct = default)
+    {     
+        return await _db.Users
+            .AsNoTracking()
+            .OrderBy(u => u.LastName)
+            .Select(u => new UserDto
+            {
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                UserName = u.UserName,
+                Email = u.Email
+            })
+            .ToArrayAsync(ct);
     }
     public async Task<ResultDto<string>> CreateUserAsync(UserRegistrationDto dto, CancellationToken ct = default)
     {      
@@ -95,16 +97,32 @@ public class UserRepository : IUserRepository
         return ResultDto<string>.Ok(user.Id);
     }
 
-    public async Task<ResultDto> UpdateUserAsync(UpdateUserDto dto, string id)
+    public async Task<ResultDto> UpdateUserAsync(UpdateUserDto dto, string id, CancellationToken ct = default)
     {
-        ApplicationUser? user = await _db.Users.SingleOrDefaultAsync(u => u.Id.Equals(id));
+        ct.ThrowIfCancellationRequested();
 
+        ApplicationUser? user = await _userManager.FindByIdAsync(id);
         if (user is null)
             return ResultDto.Fail("User not found");
 
-        user.FirstName = dto.FirstName;
-        user.LastName = dto.LastName;
-        user.Email = dto.Email;      
+        if (!string.IsNullOrEmpty(dto.FirstName))
+            user.FirstName = dto.FirstName;
+
+        if (!string.IsNullOrEmpty(dto.LastName))
+            user.LastName = dto.LastName;
+
+        if ((!string.IsNullOrEmpty(dto.Email)) && !string.Equals(dto.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            var existing = await _userManager.FindByEmailAsync(dto.Email);
+
+            if (existing != null && existing.Id != user.Id)
+                return ResultDto.Fail("Email is already in use");
+
+            var setEmail = await _userManager.SetEmailAsync(user, dto.Email);
+            if (!setEmail.Succeeded)
+                return ResultDto.Fail(setEmail.Errors.Select(e => e.Description).ToArray());         
+        }
+            user.Email = dto.Email;
 
         var result = await _userManager.UpdateAsync(user);
 
@@ -113,9 +131,11 @@ public class UserRepository : IUserRepository
             : ResultDto.Fail(result.Errors.Select(e => e.Description).ToArray());
 
     }
-    public async Task<ResultDto> DeleteUserAsync(string id)
+    public async Task<ResultDto> DeleteUserAsync(string id, CancellationToken ct = default)
     {
-        ApplicationUser? user = await _db.Users.SingleOrDefaultAsync(u => u.Id.Equals(id));
+        ct.ThrowIfCancellationRequested();
+
+        ApplicationUser? user = await _userManager.FindByIdAsync(id);
 
         if (user is null) 
             return ResultDto.Fail("User not found");           
@@ -130,18 +150,30 @@ public class UserRepository : IUserRepository
     // Roles
 
     public async Task<ResultDto<IReadOnlyList<UserDto>>> GetUsersInRoleAsync(string role, CancellationToken ct = default)
-    {
+    {       
+        if (string.IsNullOrEmpty(role))
+            return ResultDto<IReadOnlyList<UserDto>>.Fail("Role is required");
+
+        ct.ThrowIfCancellationRequested();
+
         var users = await _userManager.GetUsersInRoleAsync(role);
+
+        ct.ThrowIfCancellationRequested();
+
         var dtos = _mapper.Map<List<UserDto>>(users);
 
-        return ResultDto<IReadOnlyList<UserDto>>.Ok(dtos.ToList());
+        return ResultDto<IReadOnlyList<UserDto>>.Ok(dtos);
     }
-    public async Task<ResultDto> AddToRoleAsync(string userId, string role)
+    public async Task<ResultDto> AddToRoleAsync(string userId, string role, CancellationToken ct = default)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        ct.ThrowIfCancellationRequested();
 
+        var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
             return ResultDto.Fail();
+
+        if (await _userManager.IsInRoleAsync(user, role))
+            return ResultDto.Ok();
 
         var result = await _userManager.AddToRoleAsync(user, role);
 
@@ -149,12 +181,17 @@ public class UserRepository : IUserRepository
             ? ResultDto.Ok()
             : ResultDto.Fail(result.Errors.Select(e => e.Description).ToArray());
     }
-    public async Task<ResultDto> RemoveFromRoleAsync(string userId, string role)
+    public async Task<ResultDto> RemoveFromRoleAsync(string userId, string role, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+
         var user = await _userManager.FindByIdAsync(userId);
 
         if (user is null) 
             return ResultDto.Fail();
+
+        if (!await _userManager.IsInRoleAsync(user, role))
+            return ResultDto.Ok();
 
         var result = await _userManager.RemoveFromRoleAsync(user, role);
 

@@ -3,7 +3,9 @@ using LMS.API.Extensions;
 using LMS.API.Services;
 using LMS.Infractructure.Data;
 using LMS.Infractructure.Data.Configurations;
+using LMS.Infractructure.Repositories;
 using LMS.Services.Users;
+using Persistence.Contracts;
 
 namespace LMS.API;
 
@@ -21,7 +23,7 @@ public class Program
 
         builder.Services.ConfigureAuthentication(builder.Configuration);
         builder.Services.ConfigureIdentity();
-
+        
         builder.Services.AddScoped<IUserService, UserService>();
 
         builder.Services.AddHostedService<DataSeedHostingService>();
