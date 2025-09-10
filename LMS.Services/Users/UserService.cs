@@ -45,6 +45,7 @@ namespace LMS.Services.Users
         public async Task<ResultDto<UserDto>> CreateTeacherAsync(UserRegistrationDto dto, CancellationToken ct = default)
         {
             var createdTeacher = await unitOfWork.UserRepository.CreateUserAsync(dto, ct);
+            
             if (!createdTeacher.Succeded)
                 return ResultDto<UserDto>.Fail(createdTeacher.Errors.ToArray());
 

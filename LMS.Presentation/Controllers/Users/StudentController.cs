@@ -16,7 +16,7 @@ public class StudentController : Controller
     public StudentController(IUserService userService) => _userService = userService;
 
     [HttpGet("api/student/overview")]
-    [Authorize(Policy = "IsStudent")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> GetStudentById(CancellationToken ct)
     {             
         var calledId = User.FindFirstValue(ClaimTypes.NameIdentifier)

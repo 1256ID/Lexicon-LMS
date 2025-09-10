@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace LMS.Presentation.Controllers.Users;
 
-[Authorize(Policy = "IsTeacher")]
+[Authorize(Roles = "Teacher")]
 [ApiController]
 public class TeacherController : Controller
 {
@@ -50,35 +50,5 @@ public class TeacherController : Controller
             return Ok(result.Value ?? Array.Empty<UserDto>());           
     }
 
-    [HttpPost("api/teacher/register-student")]
-    public async Task<ActionResult<UserDto>> CreateStudent([FromBody] UserRegistrationDto dto, CancellationToken ct)
-    {
-        if (!ModelState.IsValid)
-            return ValidationProblem(ModelState);
-        
-        var result = await _userService.CreateStudentAsync(dto, ct);
-        if (result is null)
-            return Problem("Unexpected null result,", statusCode: 500);
-
-        if (!result.Succeded || result.Value is null)
-            return BadRequest(result.Errors);
-
-        return Created(string.Empty, result); 
-    }
-
-    [HttpPost("api/teacher/register-teacher")]
-    public async Task<ActionResult<UserDto>> CreateTeacher([FromBody] UserRegistrationDto dto, CancellationToken ct)
-    {
-        if (!ModelState.IsValid)
-            return ValidationProblem(ModelState);
-
-        var result = await _userService.CreateTeacherAsync(dto, ct);
-        if (result is null)
-            return Problem("Unexpected null result,", statusCode: 500);
-
-        if (!result.Succeded || result.Value is null)
-            return BadRequest(result.Errors);
-
-        return Created(string.Empty, result);
-    }
+   
 }

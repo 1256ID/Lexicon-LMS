@@ -2,8 +2,10 @@
 using Domain.Models.Configurations;
 using Domain.Models.Entities;
 using Domain.Models.Exceptions;
+using LMS.Services.Users;
 using LMS.Shared.DTOs.AuthDtos;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +28,8 @@ public class AuthService : IAuthService
         IMapper mapper,
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
+        
+        IUserService userService,
         IOptions<JwtSettings> jwtSettings
         )
     {
@@ -104,29 +108,32 @@ public class AuthService : IAuthService
         return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
     }
 
-    public async Task<IdentityResult> RegisterUserAsync(UserRegistrationDto userRegistrationDto)
-    {
-        ArgumentNullException.ThrowIfNull(userRegistrationDto);
+    //public async Task<IdentityResult> RegisterUser(UserRegistrationDto userRegistrationDto)
+    //{
+    //    ArgumentNullException.ThrowIfNull(userRegistrationDto);
 
-        var isRoleValid = !string.IsNullOrWhiteSpace(userRegistrationDto.Role);
+    //    var isRoleValid = !string.IsNullOrWhiteSpace(userRegistrationDto.Role);
 
-        if (isRoleValid)
-        {
-            var roleExists = await roleManager.RoleExistsAsync(userRegistrationDto.Role!);
-            if (!roleExists)
-                return IdentityResult.Failed(new IdentityError { Description = "Role does not exist" });
-        }
+    //    if (isRoleValid)
+    //    {
+    //        var roleexists = await roleManager.RoleExistsAsync(userRegistrationDto.Role!);
+    //        if (!roleexists)
+    //            return IdentityResult.Failed(new IdentityError { Description = "role does not exist" });
+    //    }
 
-        var user = mapper.Map<ApplicationUser>(userRegistrationDto);
-        var result = await userManager.CreateAsync(user, userRegistrationDto.Password);
+    //    var user = mapper.Map<ApplicationUser>(userRegistrationDto);
 
-        if (!result.Succeeded) return result;
+    //    var result = await userService.CreateTeacherAsync(userRegistrationDto, ct);
 
-        if (isRoleValid)
-            result = await userManager.AddToRoleAsync(user, userRegistrationDto.Role!);
+    //    if (!result.Succeeded) return result;
 
-        return result;
-    }
+    //    if (isRoleValid)
+    //        result = await userManager.AddToRoleAsync(user, userRegistrationDto.Role!);
+
+
+
+    //    return result;
+    //}
 
     public async Task<bool> ValidateUserAsync(UserAuthDto userDto)
     {

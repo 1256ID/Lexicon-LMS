@@ -55,14 +55,14 @@ namespace LMS.Blazor.Client.Services.Implementations
 
         public async Task<UserVM?> CreateStudentAsync(UserRegistrationVM dto)
         {
-            var response = await _http.PostAsJsonAsync("api/teacher/register-student", dto);
+            var response = await _http.PostAsJsonAsync("api/auth/register-student", dto);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<UserVM>();
         }
 
         public async Task<UserVM?> CreateTeacherAsync(UserRegistrationVM dto)
         {
-            var response = await _http.PostAsJsonAsync("api/teacher/register-teacher", dto);
+            var response = await _http.PostAsJsonAsync("api/auth/register-teacher", dto);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<UserVM>();
         }
