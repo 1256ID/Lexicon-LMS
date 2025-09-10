@@ -19,6 +19,6 @@ namespace LMS.Infractructure.Data
             builder.ApplyConfiguration(new ApplicationUserConfigurations());
         }
 
-        public DbSet<ApplicationUser> Users { get; set; }
+        public DbSet<ApplicationUser> Users { get; set; }      
     }
 }

@@ -24,7 +24,7 @@ public class UserService : IUserService
         => await _http.GetFromJsonAsync<CourseVM>($"api/users/{id}"); 
 
     // UPDATE operation
-    public async Task<CourseVM> UpdateCourseAsync(CourseVM user)
+    public async Task<CourseVM> UpdateUsersAsync(CourseVM user)
     {
         var response = await _http.PutAsJsonAsync($"api/users/{user.Id}/edit", user);
         response.EnsureSuccessStatusCode();

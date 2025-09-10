@@ -58,14 +58,7 @@ public static class AuthServiceExtension
     {
         var auth = services.AddAuthorizationBuilder();
 
-        auth.AddPolicy("IsTeacher", p 
-            => p.RequireRole(RoleNames.Teacher));
-        auth.AddPolicy("IsStudent", p 
-            => p.RequireRole(RoleNames.Student));
-
-        auth.AddPolicy("Admin", p => p.RequireRole(RoleNames.Teacher));
-
-        auth.AddPolicy("TeacherOrStudentClaim", policy => policy
+        auth.AddPolicy("TeacherOrStudent", policy => policy
             .RequireAssertion(ctx 
                 => ctx.User.HasClaim(ApplicationClaimTypes.UserType, RoleNames.Teacher) 
                 || ctx.User.HasClaim(ApplicationClaimTypes.UserType, RoleNames.Student)));
