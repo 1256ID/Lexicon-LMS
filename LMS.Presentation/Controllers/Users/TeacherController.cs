@@ -5,9 +5,9 @@ using Service.Contracts;
 using LMS.Shared.DTOs.User;
 using LMS.Shared.DTOs;
 using LMS.Shared.DTOs.AuthDtos;
-using Microsoft.AspNetCore.Http; 
+using Microsoft.AspNetCore.Http;
 
-namespace LMS.Presentation.Controllers.Users.Student;
+namespace LMS.Presentation.Controllers.Users;
 
 [Authorize(Policy = "IsTeacher")]
 [ApiController]

@@ -6,7 +6,7 @@ using LMS.Shared.DTOs.User;
 using LMS.Shared.DTOs;
 using LMS.Shared.DTOs.AuthDtos;
 
-namespace LMS.Presentation.Controllers.Users.Student;
+namespace LMS.Presentation.Controllers.Users;
 
 [Authorize]
 [ApiController]
