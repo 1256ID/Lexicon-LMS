@@ -78,16 +78,6 @@ public class UserRepository : IUserRepository
 
         if (!result.Succeeded)
             return ResultDto<string>.Fail(result.Errors.Select(e => e.Description).ToArray());
-        
-        await _userManager.AddClaimsAsync
-            (
-                user,
-                [
-                    new Claim("UserId", user.Id),                   
-                    new Claim(ApplicationClaimTypes.UserType, dto.Role),
-                    new Claim(ClaimTypes.Role, dto.Role)
-                ]
-            );
 
         var createdUser = await _db.Users
             .Where(user => user.Id == user.Id)
