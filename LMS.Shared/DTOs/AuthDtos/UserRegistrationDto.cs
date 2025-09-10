@@ -13,9 +13,7 @@ public record UserRegistrationDto
     [Required]
     [EmailAddress]
     public string Email { get; init; } = string.Empty;
-
-    [Required]
-    public string UserName { get; init; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
 
     //Optional if you want to add user to role when you register user
     //UI have to be updated to support this

@@ -14,7 +14,7 @@
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
-        <AuthorizeView Policy="TeacherOrStudent">
+        <AuthorizeView>
             <NotAuthorized>
                 <!-- Home before login -->
                 <div class="nav-item px-2">
@@ -33,8 +33,9 @@
 
             <Authorized>
 
-                <AuthorizeView Roles="Student">
-                <!-- Student länkar -->
+                @if (context.User.IsInRole("Student"))
+                {                           
+                    <!-- Student länkar -->
                               
                     <div class="nav-item px-2">
                         <NavLink class="nav-link" href="/student/overview" Match="NavLinkMatch.All">
@@ -71,11 +72,11 @@
                         </div>
                     }
               
-                </AuthorizeView>
+                }
 
-                <AuthorizeView Roles="Teacher"> 
-
-                <!-- Teacher länkar -->
+                @if (context.User.IsInRole("Student"))
+                {                              
+                    <!-- Teacher länkar -->
                                                 
                     <div class="nav-item px-2">
                         <NavLink class="nav-link" href="/teacher/overview" Match="NavLinkMatch.All">
@@ -130,7 +131,7 @@
                         </div>
                     }
 
-                </AuthorizeView>
+                }
 
                 <!-- DemoAuth
                 <div class="nav-item px-2">
