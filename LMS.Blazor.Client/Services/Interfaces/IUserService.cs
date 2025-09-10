@@ -5,14 +5,22 @@ namespace LMS.Blazor.Client.Services.Interfaces
 {
     public interface IUserService 
     {
-        // READ operations
-        Task<IEnumerable<CourseVM>> GetUsersAsync();
-        Task<CourseVM?> GetUserByIdAsync(int id);
+        // User
+        Task<IEnumerable<UserVM>> GetUsersAsync();
+        Task<UserVM?> GetUserByIdAsync(string id);
+        Task<UserVM?> UpdateUserAsync(UserVM user, string id);
+        Task<bool> DeleteUserAsync(string id);
 
-        // UPDATE operation
-        Task<CourseVM> UpdateCourseAsync(CourseVM user);
 
-        // DELETE operation
-        Task<bool> DeleteUserAsync(int id);
+        // Student
+        Task<UserVM?> GetStudentByIdAsync();
+        Task<IEnumerable<UserVM>> GetAllStudentsAsync();
+
+
+        // Teacher
+        Task<UserVM?> GetTeacherByIdAsync();
+        Task<IEnumerable<UserVM>> GetAllTeachersAsync();
+        Task<UserVM?> CreateStudentAsync(UserRegistrationVM dto);
+        Task<UserVM?> CreateTeacherAsync(UserRegistrationVM dto);
     }
 }
