@@ -9,7 +9,7 @@ namespace LMS.Shared.DTOs.Courses
     public record CourseDto
     {
         public int Id { get; init; }
-        public string Title { get; init; } = string.Empty;
+        public string Name { get; init; } = string.Empty;
         public string Description { get; init; } = string.Empty;
         public DateTime StartDate { get; init; }
         public DateTime EndDate { get; init; }
