@@ -20,5 +20,6 @@ namespace LMS.Infractructure.Data
         }
 
         public DbSet<ApplicationUser> Users { get; set; }
+        public DbSet<Course> Courses => Set<Course>();
     }
 }

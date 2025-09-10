@@ -11,5 +11,6 @@ public class UnitOfWork
         : IUnitOfWork
 {
     public IUserRepository UserRepository => userRepository;
+    public ICourseRepository CourseRepository => CourseRepository;
     public async Task CompleteAsync() => await context.SaveChangesAsync();
 }
