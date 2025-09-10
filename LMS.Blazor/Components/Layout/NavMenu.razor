@@ -32,7 +32,7 @@
             </NotAuthorized>
 
             <Authorized>
-                <!-- Student länkar -->
+                <!-- Student links -->
                 @if (context.User.IsInRole("Student"))
                 {
                     <div class="nav-item px-2">
@@ -45,16 +45,18 @@
                     <div class="nav-item px-2">
                         <NavLink class="nav-link" href="/student/course" Match="NavLinkMatch.All">
                             <span class="bi bi-book-nav-menu" aria-hidden="true"></span> My Course
-                        </NavLink> <!-- to do : remplace @course.Name  -->
+                        </NavLink>
                     </div>
 
+                    <!-- Contextual navigation for students -->
                     @if (NavState.CurrentModuleId != null)
                     {
                         <div class="nav-item px-2">
-                            <NavLink class="nav-link" 
-                                href="@($"student/course/module/{NavState.CurrentModuleId}")"
-                                Match="NavLinkMatch.All">
-                                    @NavState.CurrentModuleName
+                            <NavLink class="nav-link contextual-nav module-nav"
+                                     href="@($"student/course/module/{NavState.CurrentModuleId}")"
+                                     Match="NavLinkMatch.All"
+                                     title="@NavState.CurrentModuleName">
+                                @NavState.CurrentModuleName
                             </NavLink>
                         </div>
                     }
@@ -62,20 +64,19 @@
                     @if (NavState.CurrentActivityId != null)
                     {
                         <div class="nav-item px-2">
-                            <NavLink class="nav-link" 
-                                href="@($"student/course/module/{NavState.CurrentModuleId}/activity/{NavState.CurrentActivityId}")"
-                                    Match="NavLinkMatch.All">
-                                    @NavState.CurrentActivityName
+                            <NavLink class="nav-link contextual-nav activity-nav"
+                                     href="@($"student/course/module/{NavState.CurrentModuleId}/activity/{NavState.CurrentActivityId}")"
+                                     Match="NavLinkMatch.All"
+                                     title="@NavState.CurrentActivityName">
+                                @NavState.CurrentActivityName
                             </NavLink>
                         </div>
                     }
-
                 }
 
-                <!-- Teacher länkar -->
+                <!-- Teacher links -->
                 @if (context.User.IsInRole("Teacher"))
                 {
-                    
                     <div class="nav-item px-2">
                         <NavLink class="nav-link" href="/teacher/overview" Match="NavLinkMatch.All">
                             <span class="bi bi-grid-nav-menu" aria-hidden="true"></span> Overview
@@ -89,9 +90,6 @@
                         </NavLink>
                     </div>
 
-
-
-
                     <!-- All courses -->
                     <div class="nav-item px-2">
                         <NavLink class="nav-link" href="/teacher/course" Match="NavLinkMatch.All">
@@ -99,12 +97,14 @@
                         </NavLink>
                     </div>
 
+                    <!-- Contextual navigation for teachers -->
                     @if (NavState.CurrentCourseId != null)
                     {
                         <div class="nav-item px-2">
-                            <NavLink class="nav-link"
+                            <NavLink class="nav-link contextual-nav course-nav"
                                      href="@($"/teacher/course/{NavState.CurrentCourseId}")"
-                                     Match="NavLinkMatch.All">
+                                     Match="NavLinkMatch.All"
+                                     title="@NavState.CurrentCourseName">
                                 @NavState.CurrentCourseName
                             </NavLink>
                         </div>
@@ -113,9 +113,10 @@
                     @if (NavState.CurrentModuleId != null)
                     {
                         <div class="nav-item px-2">
-                            <NavLink class="nav-link"
+                            <NavLink class="nav-link contextual-nav module-nav"
                                      href="@($"/teacher/course/{NavState.CurrentCourseId}/module/{NavState.CurrentModuleId}")"
-                                     Match="NavLinkMatch.All">
+                                     Match="NavLinkMatch.All"
+                                     title="@NavState.CurrentModuleName">
                                 @NavState.CurrentModuleName
                             </NavLink>
                         </div>
@@ -124,30 +125,22 @@
                     @if (NavState.CurrentActivityId != null)
                     {
                         <div class="nav-item px-2">
-                            <NavLink class="nav-link"
+                            <NavLink class="nav-link contextual-nav activity-nav"
                                      href="@($"/teacher/course/{NavState.CurrentCourseId}/module/{NavState.CurrentModuleId}/activity/{NavState.CurrentActivityId}")"
-                                     Match="NavLinkMatch.All">
+                                     Match="NavLinkMatch.All"
+                                     title="@NavState.CurrentActivityName">
                                 @NavState.CurrentActivityName
                             </NavLink>
                         </div>
                     }
-
                 }
-
-                <!-- DemoAuth
-                <div class="nav-item px-2">
-                    <NavLink class="nav-link" href="demoauth">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> DemoAuth
-                    </NavLink>
-                </div> -->
             </Authorized>
         </AuthorizeView>
 
-        <!-- bottom section- profil et logout -->
+        <!-- bottom section - profile and logout -->
         <div class="nav-bottom">
             <AuthorizeView>
                 <Authorized>
-
                     <div class="nav-item px-2">
                         <NavLink class="nav-link" href="Account/Manage">
                             <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
@@ -169,8 +162,6 @@
     </nav>
 </div>
 
-
-
 @code {
     private string? currentUrl;
     private Action? _navStateHandler;
@@ -183,11 +174,13 @@
         _navStateHandler = () => InvokeAsync(StateHasChanged);
         NavState.OnChange += _navStateHandler;
     }
+
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
+
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
@@ -196,11 +189,3 @@
             NavState.OnChange -= _navStateHandler;
     }
 }
-
-
-
-
-
-
-
-
