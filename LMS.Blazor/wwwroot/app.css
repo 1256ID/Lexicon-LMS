@@ -112,7 +112,7 @@ a, .btn-link {
 }
 
 /* ========================================
-   CARDS
+   CARDS & PADDING IMPROVEMENTS
    ======================================== */
 .card {
     min-height: 280px;
@@ -125,6 +125,30 @@ a, .btn-link {
 
 .shadow-lg {
     box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
+
+/* Improved card body padding */
+.card-body {
+    padding: 1.5rem !important;
+}
+
+/* Specific card headers with better padding */
+.card-header {
+    padding: 1rem 1.5rem !important;
+}
+
+/* Override p-2 classes with better padding for cards */
+.card .card-body.p-2 {
+    padding: 1.25rem !important;
+}
+
+.card .card-header.p-2 {
+    padding: 0.75rem 1.25rem !important;
+}
+
+/* Hero card specific padding */
+.hero-card .card-body {
+    padding: 1.5rem !important;
 }
 
 /* Card Types */
@@ -156,6 +180,46 @@ a, .btn-link {
     width: 28px;
     height: 28px;
     padding: 0;
+}
+
+/* ========================================
+   OVERVIEW SPECIFIC PADDING FIXES
+   ======================================== */
+
+/* Upcoming deadlines component padding */
+.upcoming-deadlines .card-body,
+.upcoming-deadlines .card-header {
+    padding: 1.25rem !important;
+}
+
+/* Today's activities padding */
+.today-activities .card-body {
+    padding: 1.25rem !important;
+}
+
+.today-activities .card-header {
+    padding: 0.75rem 1.25rem !important;
+}
+
+/* Activity items within cards */
+.border-start.border-2.border-primary.ps-2 {
+    padding-left: 1rem !important;
+    margin-bottom: 1rem !important;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+/* List group items in deadlines */
+.list-group-item {
+    padding: 0.75rem 1rem !important;
+}
+
+/* Course items in My Courses section */
+.course-item-hover {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 1rem !important;
+    margin-bottom: 0.75rem !important;
 }
 
 /* ========================================
@@ -224,6 +288,65 @@ a, .btn-link {
     padding-top: 0.5rem;
 }
 
+/* Contextual Navigation with Proper Ellipsis */
+.contextual-nav {
+    position: relative !important;
+    padding-left: 2rem !important;
+    display: block !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: calc(100% - 1rem) !important;
+    max-width: 200px !important;
+}
+
+/* Course bullet */
+.course-nav::before {
+    content: "\2022";
+    color: rgba(255,255,255,0.7);
+    position: absolute;
+    left: 1rem;
+    top: 0.5rem;
+    font-size: 1em;
+}
+
+/* Module arrow */
+.module-nav {
+    padding-left: 2.2rem !important;
+}
+
+    .module-nav::before {
+        content: "\25B8";
+        color: rgba(255,255,255,0.7);
+        position: absolute;
+        left: 1rem;
+        top: 0.5rem; /* Fixed position */
+        font-size: 0.8em;
+    }
+
+/* Activity arrow with more indentation */
+.activity-nav {
+    padding-left: 2.5rem !important;
+}
+
+    .activity-nav::before {
+        content: "\25B8";
+        color: rgba(255,255,255,0.5);
+        position: absolute;
+        left: 1.3rem;
+        top: 0.5rem; /* Fixed position*/
+        font-size: 0.7em;
+    }
+
+/* Hover effects for contextual nav */
+.contextual-nav:hover {
+    background-color: rgba(255,255,255,0.1);
+    border-radius: 0.25rem;
+}
+
+    .contextual-nav:hover::before {
+        color: rgba(255,255,255,1);
+    }
 
 /* Bootstrap Icons for Sidebar */
 .bi-grid-nav-menu {
@@ -276,11 +399,6 @@ a, .btn-link {
 .hero-card {
     border-radius: 0.8rem;
     background: linear-gradient(135deg, var(--color-course) 0%, var(--color-course-dark) 100%);
-}
-
-.course-item-hover {
-    cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .position-absolute.translate-middle.badge {
@@ -363,6 +481,15 @@ a.text-decoration-none:hover {
 @media (max-width: 576px) {
     .card {
         min-height: 240px;
+    }
+
+    /* Maintain good padding on mobile */
+    .card-body {
+        padding: 1rem !important;
+    }
+
+    .card-header {
+        padding: 0.75rem 1rem !important;
     }
 }
 
