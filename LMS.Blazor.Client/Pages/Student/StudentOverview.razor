@@ -1,0 +1,192 @@
+﻿@page "/student/overview"
+
+@rendermode InteractiveWebAssembly
+@inject ICourseService CourseService
+@inject IModuleService ModuleService
+@inject IActivityService ActivityService
+
+@using System.Text.Json
+@using LMS.Blazor.Client.Components.Overviews
+@using LMS.Blazor.Client.Components.Common
+@using LMS.Blazor.Client.Models
+@using LMS.Blazor.Client.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@attribute [Authorize]
+
+<AuthorizeView Roles="Student">
+    <Authorized>
+        <div class="content">
+            <!-- Loading or Hero Section -->
+            @if (isLoading)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <Loading Show="true" Message="Loading your dashboard..." />
+                    </div>
+                </div>
+            }
+            else
+            {
+                <HeroSection WelcomeMessage="@($"Welcome, {context.User.Identity?.Name}")"
+                             ShowRightSection="false" />
+            }
+
+            <!-- Main Content -->
+            <div class="row">
+                <div class="col-12">
+                    <!-- Upcoming Deadlines -->
+                    <UpcomingDeadLines Title="Upcoming Deadlines"
+                                       IconClass="bi-calendar-event"
+                                       Items="@GetUpcomingDeadlinesList()"
+                                       IsListFormat="true"
+                                       ShowBadges="true"
+                                       GetItemTitle="@GetDeadlineTitle"
+                                       GetItemSubtitle="@GetDeadlineSubtitle"
+                                       GetItemDate="@GetDeadlineDate"
+                                       GetBadgeClass="@GetDeadlineBadgeClass"
+                                       EmptyMessage="No upcoming deadlines"
+                                       EmptyIcon="bi-calendar-check" />
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="content">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Access Denied</h4>
+                <p>You must be logged in as a Student to access this page.</p>
+                <hr>
+                <p class="mb-0">Please <a href="/login" class="alert-link">login</a> with your student credentials.</p>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private StudentOverviewDto? studentData;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOverviewData();
+    }
+
+    private async Task LoadOverviewData()
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            // Artificial delay to see loading (remove in production)
+            await Task.Delay(500);
+
+            // data from mock services
+            var coursesTask = CourseService.GetCoursesAsync();
+            var modulesTask = ModuleService.GetModulesAsync();
+            var activitiesTask = ActivityService.GetActivitiesAsync();
+
+            await Task.WhenAll(coursesTask, modulesTask, activitiesTask);
+
+            var courses = await coursesTask;
+            var modules = await modulesTask;
+            var activities = await activitiesTask;
+
+            var enrolledCourses = courses.Take(1).ToList();
+            var enrolledModules = modules.Where(m => enrolledCourses.Any(c => c.Id == m.CourseId)).ToList();
+
+            // Get activities from enrolled modules that have deadlines
+            var upcomingDeadlines = activities
+                .Where(a => enrolledModules.Any(m => m.Id == a.ModuleId))
+                .Where(a => a.TypeName == "Assignment") 
+                .Where(a => a.EndDate > DateTime.Now)
+                .OrderBy(a => a.EndDate)
+                .Select(a => new StudentDeadlineDto
+                {
+                    Id = a.Id,
+                    Title = a.Name,
+                    Description = $"{GetCourseName(a.ModuleId, enrolledModules, enrolledCourses)} - {GetModuleName(a.ModuleId, enrolledModules)}",
+                    DueDate = a.EndDate,
+                    Type = a.TypeName ?? "Assignment"
+                })
+                .ToList();
+
+            studentData = new StudentOverviewDto
+            {
+                UpcomingDeadlines = upcomingDeadlines
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading overview data: {ex.Message}");
+            studentData = new StudentOverviewDto();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    // Helper methods
+    private string GetCourseName(int moduleId, List<ModuleVM> modules, List<CourseVM> courses)
+    {
+        var module = modules.FirstOrDefault(m => m.Id == moduleId);
+        var course = courses.FirstOrDefault(c => c.Id == module?.CourseId);
+        return course?.Name ?? "Unknown Course";
+    }
+
+    private string GetModuleName(int moduleId, List<ModuleVM> modules)
+    {
+        return modules.FirstOrDefault(m => m.Id == moduleId)?.Name ?? "Unknown Module";
+    }
+
+    // Methods for UpcomingDeadlines component
+    private IEnumerable<object> GetUpcomingDeadlinesList()
+    {
+        return studentData?.UpcomingDeadlines?.Cast<object>() ?? new List<object>();
+    }
+
+    private string GetDeadlineTitle(object item)
+    {
+        return ((StudentDeadlineDto)item).Title;
+    }
+
+    private string GetDeadlineSubtitle(object item)
+    {
+        return ((StudentDeadlineDto)item).Description;
+    }
+
+    private DateTime? GetDeadlineDate(object item)
+    {
+        return ((StudentDeadlineDto)item).DueDate;
+    }
+
+    private string GetDeadlineBadgeClass(object item)
+    {
+        var deadline = (StudentDeadlineDto)item;
+        var daysUntil = (deadline.DueDate - DateTime.Today).TotalDays;
+
+        if (daysUntil <= 1) return "bg-danger";
+        if (daysUntil <= 3) return "bg-warning";
+        return "bg-primary";
+    }
+
+    // DTO Classes
+    public class StudentOverviewDto
+    {
+        public List<StudentDeadlineDto> UpcomingDeadlines { get; set; } = new();
+    }
+
+    public class StudentDeadlineDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime DueDate { get; set; }
+        public string Type { get; set; } = string.Empty;
+    }
+}

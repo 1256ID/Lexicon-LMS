@@ -128,16 +128,19 @@ a, .btn-link {
 }
 
 /* Improved card body padding */
+
 .card-body {
     padding: 1.5rem !important;
 }
 
 /* Specific card headers with better padding */
+
 .card-header {
     padding: 1rem 1.5rem !important;
 }
 
 /* Override p-2 classes with better padding for cards */
+
 .card .card-body.p-2 {
     padding: 1.25rem !important;
 }
@@ -147,6 +150,7 @@ a, .btn-link {
 }
 
 /* Hero card specific padding */
+
 .hero-card .card-body {
     padding: 1.5rem !important;
 }
