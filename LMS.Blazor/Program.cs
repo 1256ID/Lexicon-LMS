@@ -75,7 +75,8 @@ builder.Services.Configure<PasswordHasherOptions>(options => options.IterationCo
 // Token storage service
 builder.Services.AddSingleton<ITokenStorage, TokenStorageService>();
 
-builder.Services.AddScoped<ICourseService, MockCourseService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+// builder.Services.AddScoped<ICourseService, MockCourseService>();
 builder.Services.AddScoped<IModuleService, MockModuleService>();
 builder.Services.AddScoped<IActivityService, MockActivityService>();
 builder.Services.AddScoped<IParticipantsService, MockParticipantsService>();

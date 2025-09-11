@@ -1,6 +1,7 @@
 ﻿using LMS.Infractructure.Data;
 using LMS.Shared.DTOs;
 using LMS.Shared.DTOs.Courses;
+using Domain.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Contracts;
 
@@ -40,14 +41,14 @@ public class CourseRepository(ApplicationDbContext context) : ICourseRepository
 
     public async Task<ResultDto<CourseDto>> CreateAsync(CourseUpsertDto dto, CancellationToken ct = default)
     {
-        var entity = new Domain.Models.Entities.Course {
+        var entity = new Course {
             Name = dto.Name,
             Description = dto.Description,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate
         };
 
-        context.Courses.Add(entity);
+        await context.Courses.AddAsync(entity);
         await context.SaveChangesAsync(ct);
 
         return ResultDto<CourseDto>.Ok(new CourseDto {
