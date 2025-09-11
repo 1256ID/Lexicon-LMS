@@ -24,7 +24,10 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore();
 
-builder.Services.AddScoped<ICourseService, MockCourseService>();
+//builder.Services.AddScoped<ICourseService, MockCourseService>();
+builder.Services.AddHttpClient<ICourseService, CourseService>(c => {
+    c.BaseAddress = new Uri(builder.Configuration["LmsAPIBaseAddress"]!); // https://localhost:7213
+});
 builder.Services.AddScoped<IModuleService, MockModuleService>();
 builder.Services.AddScoped<IActivityService, MockActivityService>();
 builder.Services.AddScoped<IParticipantsService, MockParticipantsService>();

@@ -1,15 +1,16 @@
-﻿using Domain.Contracts.Repositories;
-using LMS.Infractructure.Data;
+﻿using LMS.Infractructure.Data;
+using Persistence.Contracts;
+using System.Runtime.CompilerServices;
 
 namespace LMS.Infractructure.Repositories;
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork
+    (
+        ApplicationDbContext context,
+        IUserRepository userRepository
+    ) 
+        : IUnitOfWork
 {
-    private readonly ApplicationDbContext context;
-
-    public UnitOfWork(ApplicationDbContext context)
-    {
-        this.context = context ?? throw new ArgumentNullException(nameof(context));
-    }
-
+    public IUserRepository UserRepository => userRepository;
+    public ICourseRepository CourseRepository => CourseRepository;
     public async Task CompleteAsync() => await context.SaveChangesAsync();
 }

@@ -2,7 +2,9 @@
   "dependencies": {
     "mssql1": {
       "type": "mssql",
-      "connectionId": "ConnectionStrings:ApplicationDbContext"
+      // "connectionId": "ConnectionStrings:ApplicationDbContext"
+      "connectionId": "Server=(localdb)\\\\mssqllocaldb;Database=LmsDB;Trusted_Connection=True;MultipleActiveResultSets=true"
     }
-  }
+  },
+  "AllowedHosts": "*"
 }

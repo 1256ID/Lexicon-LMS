@@ -6,7 +6,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5166"
+      "applicationUrl": "http://localhost:5166;https://localhost:7213;"
     },
     "https": {
       "commandName": "Project",
@@ -16,7 +16,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7213;http://localhost:5166"
+      "applicationUrl": "https://localhost:7213;http://localhost:5166;"
+
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json"
