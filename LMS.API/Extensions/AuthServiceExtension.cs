@@ -2,8 +2,12 @@
 using LMS.Infractructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using LMS.Shared.RoleNames;
+using LMS.Shared.Claims;
 using System.Text;
+using System.Security.Claims;
 
 namespace LMS.API.Extensions;
 
@@ -44,9 +48,21 @@ public static class AuthServiceExtension
                    ValidateIssuerSigningKey = true,
                    ValidIssuer = jwtSettings.Issuer,
                    ValidAudience = jwtSettings.Audience,
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+                   RoleClaimType = ClaimTypes.Role
                };
            });
+    }
+
+    public static void AddAuthorizationPolicies(this IServiceCollection services)
+    {
+        var auth = services.AddAuthorizationBuilder();
+
+        auth.AddPolicy("TeacherOrStudent", policy => policy
+            .RequireAssertion(ctx 
+                => ctx.User.HasClaim(ApplicationClaimTypes.UserType, RoleNames.Teacher) 
+                || ctx.User.HasClaim(ApplicationClaimTypes.UserType, RoleNames.Student)));
+
     }
 
     public static void ConfigureIdentity(this IServiceCollection services)

@@ -10,5 +10,5 @@ public class UserInfo
 
    
     // added properties (based on diagram)
-    public int CourseId { get; set; }
+    // public int CourseId { get; set; }
 }

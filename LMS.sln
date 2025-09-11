@@ -12,10 +12,17 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Models", "Domain.Models\Domain.Models.csproj", "{37686FA2-E778-4F5F-9A7F-398327EAFB61}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Infractructure", "LMS.Infractructure\LMS.Infractructure.csproj", "{B095FB97-18E5-447A-80AB-2F4164CD2A36}"
+	ProjectSection(ProjectDependencies) = postProject
+		{04577DE7-7CBD-47A2-A7C6-BCE522B342EB} = {04577DE7-7CBD-47A2-A7C6-BCE522B342EB}
+		{37686FA2-E778-4F5F-9A7F-398327EAFB61} = {37686FA2-E778-4F5F-9A7F-398327EAFB61}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Contracts", "Domain.Contracts\Domain.Contracts.csproj", "{AF13264F-288F-401C-BB29-E14658DB93B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Services", "LMS.Services\LMS.Services.csproj", "{F6CD360A-660D-46C8-8C5E-24F053795494}"
+	ProjectSection(ProjectDependencies) = postProject
+		{04577DE7-7CBD-47A2-A7C6-BCE522B342EB} = {04577DE7-7CBD-47A2-A7C6-BCE522B342EB}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Contracts", "Service.Contracts\Service.Contracts.csproj", "{67354E87-2EFF-4266-9C6B-F2D603B00806}"
 EndProject
@@ -30,6 +37,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Blazor", "LMS.Blazor\LMS.Blazor.csproj", "{EBD51E46-3803-8991-BDFA-B899DE1DA2BB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Blazor.Client", "LMS.Blazor.Client\LMS.Blazor.Client.csproj", "{7BA0B507-7E36-34C7-6C7F-7D93827A2767}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Persistence.Contracts", "Persistence.Contracts\Persistence.Contracts.csproj", "{04577DE7-7CBD-47A2-A7C6-BCE522B342EB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{37686FA2-E778-4F5F-9A7F-398327EAFB61} = {37686FA2-E778-4F5F-9A7F-398327EAFB61}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +89,10 @@ Global
 		{7BA0B507-7E36-34C7-6C7F-7D93827A2767}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BA0B507-7E36-34C7-6C7F-7D93827A2767}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BA0B507-7E36-34C7-6C7F-7D93827A2767}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04577DE7-7CBD-47A2-A7C6-BCE522B342EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04577DE7-7CBD-47A2-A7C6-BCE522B342EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04577DE7-7CBD-47A2-A7C6-BCE522B342EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04577DE7-7CBD-47A2-A7C6-BCE522B342EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +110,7 @@ Global
 		{6F17C632-5F8D-44B3-BC98-3CBF638DC2F9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{EBD51E46-3803-8991-BDFA-B899DE1DA2BB} = {6F17C632-5F8D-44B3-BC98-3CBF638DC2F9}
 		{7BA0B507-7E36-34C7-6C7F-7D93827A2767} = {6F17C632-5F8D-44B3-BC98-3CBF638DC2F9}
+		{04577DE7-7CBD-47A2-A7C6-BCE522B342EB} = {D10F06A2-15E3-48A7-A62E-5B967CF53BB4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F35F38BC-8F0E-4CC9-929A-0D4EA3CCFB45}

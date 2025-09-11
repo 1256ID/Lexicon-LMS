@@ -1,6 +1,11 @@
+using Domain.Contracts;
 using LMS.API.Extensions;
 using LMS.API.Services;
 using LMS.Infractructure.Data;
+using LMS.Infractructure.Data.Configurations;
+using LMS.Infractructure.Repositories;
+using LMS.Services.Users;
+using Persistence.Contracts;
 
 namespace LMS.API;
 
@@ -10,20 +15,23 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.ConfigureSql(builder.Configuration);
+        builder.Services.AddAuthorizationPolicies();
+        builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.ConfigureControllers();
 
-        builder.Services.AddRepositories();
         builder.Services.AddServiceLayer();
 
         builder.Services.ConfigureAuthentication(builder.Configuration);
         builder.Services.ConfigureIdentity();
+        
+        builder.Services.AddScoped<IUserService, UserService>();
 
         builder.Services.AddHostedService<DataSeedHostingService>();
         builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperProfile>());
         builder.Services.ConfigureCors();
         builder.Services.ConfigureOpenApi();
-       
+
+        builder.Services.AddControllers();
 
         var app = builder.Build();
 
